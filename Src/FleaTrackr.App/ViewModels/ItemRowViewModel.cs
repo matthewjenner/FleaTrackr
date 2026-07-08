@@ -37,7 +37,9 @@ public sealed class ItemRowViewModel(Item item)
         : "-";
 
     public string MinFleaLevelText =>
-        Item.MinLevelForFlea is { } lvl ? $"Flea level {lvl}" : "No flea level requirement";
+        Item.MinLevelForFlea is { } lvl
+            ? $"Needs character level {lvl} to trade on the flea market"
+            : "No character-level requirement to trade on the flea market";
 
     public string OfferCountText =>
         Item.LastOfferCount is { } n ? $"{n:N0} offers" : "-";

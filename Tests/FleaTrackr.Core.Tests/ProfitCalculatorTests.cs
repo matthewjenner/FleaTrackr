@@ -83,6 +83,31 @@ public class ProfitCalculatorTests
     }
 
     [Fact]
+    public void Reward_sold_on_flea_is_valued_net_of_the_fee()
+    {
+        var reward = new Item
+        {
+            Id = "LEDX", Name = "LEDX", BasePrice = 40_000,
+            SellFor = [new VendorPrice(VendorPrice.FleaMarketVendorName, 500_000, "RUB", 500_000)],
+        };
+        var barter = new Barter
+        {
+            TraderName = "Therapist", TraderLevel = 3,
+            RequiredItems = [new ItemStack(ItemWith("in", fleaBuy: 100_000), 1)],
+            RewardItems = [new ItemStack(reward, 1)],
+        };
+
+        TradeCost cost = ProfitCalculator.ForBarter(barter);
+        int fee = FleaFee.Calculate(40_000, 500_000);
+
+        cost.OutputValueGross.Should().Be(500_000);
+        cost.FleaFeeTotal.Should().Be(fee).And.NotBe(0);
+        cost.OutputValue.Should().Be(500_000 - fee, "output is net of the flea fee");
+        cost.Profit.Should().Be(500_000 - fee - 100_000);
+        cost.GrossProfit.Should().Be(400_000);
+    }
+
+    [Fact]
     public void Count_scales_the_cost()
     {
         var barter = new Barter

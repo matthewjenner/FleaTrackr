@@ -1,3 +1,4 @@
+using FleaTrackr.App.Services;
 using FleaTrackr.App.ViewModels;
 using FleaTrackr.Core.Models;
 using FluentAssertions;
@@ -31,6 +32,20 @@ public class FlipFinderViewModelTests
         vm.Results[0].Name.Should().Be("big", "highest profit first");
         vm.Results[1].Name.Should().Be("small");
         vm.StatusMessage.Should().Contain("Scanned 4 items").And.Contain("Found 2 flips");
+    }
+
+    [Fact]
+    public async Task Scan_excludes_items_above_the_configured_player_flea_level()
+    {
+        Item reachable = Flip("reach", 1_000, 50_000) with { MinLevelForFlea = 15 };
+        Item locked = Flip("locked", 1_000, 90_000) with { MinLevelForFlea = 40 };
+        var api = new FakeApi().SetItem(reachable).SetItem(locked);
+        var vm = new FlipFinderViewModel(api, () => GameMode.Pvp,
+            () => new AppSettings { PlayerFleaLevel = 20, DefaultMinProfit = 1_000 });
+
+        await vm.ScanCommand.ExecuteAsync(null);
+
+        vm.Results.Should().ContainSingle().Which.Name.Should().Be("reach");
     }
 
     [Fact]

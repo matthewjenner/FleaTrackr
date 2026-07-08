@@ -66,11 +66,11 @@ over HttpClient) and executes against it. Profit math, flip ranking, alert evalu
 refresh scheduling logic live in Core so they are testable with an in-memory `ITarkovApi` fake and
 no live API. Do not pull Avalonia, HttpClient, or filesystem calls into Core.
 
-## The tabs (Search | Watchlist | Barters & Crafts | Flip Finder)
+## The tabs (Search | Watchlist | Barters & Crafts | Flip Finder | Settings)
 
-A Settings tab is intentionally absent until there are user-editable settings to host (see
-`Docs/polish-backlog.md`); today's settings use sensible defaults. `TabCount` in
-`MainWindowViewModel` must stay in step with the tabs and the restored-index clamp.
+Settings hosts the player flea level, estimated-fee reduction, default refresh cadence, default
+Flip Finder min-profit, and "open config folder". `TabCount` in `MainWindowViewModel` must stay in
+step with the tabs (it clamps the restored tab index).
 
 The shell is a `DockPanel`: update banner docked top, an app header with the **PVP/PVE economy
 toggle** (bound to `AppHost.GameMode` - changing it re-queries the active tab), then a `TabControl`.
@@ -116,6 +116,9 @@ mid-write never corrupts a file:
 - **Threading**: API calls and timers run off the UI thread; marshal back via `Dispatcher.UIThread`
   before raising `PropertyChanged`.
 - **Naming**: ViewModels end in `ViewModel`. Views end in `Window` or `View`.
+- **Tooltips/hints**: give every input, meaningful label, column header, and action button a
+  `ToolTip.Tip` explaining what it is and does, in plain language (assume no Tarkov jargon - e.g.
+  "character (PMC) level", not "flea level"). New UI should follow suit.
 
 ## Releasing / versioning (identical to PlexTool)
 

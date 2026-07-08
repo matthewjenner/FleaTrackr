@@ -1,0 +1,79 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FleaTrackr.App.ViewModels"
+             x:Class="FleaTrackr.App.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <ScrollViewer>
+        <StackPanel Margin="20" Spacing="18" MaxWidth="560" HorizontalAlignment="Left">
+
+            <TextBlock Text="Settings" FontSize="18" FontWeight="SemiBold" />
+
+            <!-- Defaults -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Defaults" FontWeight="SemiBold"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+
+                <Grid ColumnDefinitions="240,*" RowDefinitions="Auto,Auto" ColumnSpacing="14" RowSpacing="10">
+                    <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"
+                               Text="New watchlist item refresh"
+                               ToolTip.Tip="The refresh cadence given to items when you first add them to the watchlist. You can still change each item's cadence individually on the Watchlist tab." />
+                    <ComboBox Grid.Row="0" Grid.Column="1" MinWidth="160"
+                              ItemsSource="{Binding RefreshOptions}" SelectedItem="{Binding DefaultRefresh}"
+                              ToolTip.Tip="How often a newly added item checks for a new price. Faster is more current but makes more requests to the free API.">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:RefreshOption">
+                                <TextBlock Text="{Binding Label}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"
+                               Text="Flip Finder minimum profit (RUB)"
+                               ToolTip.Tip="The Flip Finder starts each scan filtered to flips worth at least this much net profit. You can override it per scan on the Flip Finder tab." />
+                    <TextBox Grid.Row="1" Grid.Column="1" Width="140" HorizontalAlignment="Left"
+                             Text="{Binding DefaultMinProfit}"
+                             ToolTip.Tip="Roubles. Flips below this profit are hidden from scan results." />
+                </Grid>
+            </StackPanel>
+
+            <!-- Economy tuning -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Profit tuning" FontWeight="SemiBold"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+
+                <Grid ColumnDefinitions="240,*" RowDefinitions="Auto,Auto" ColumnSpacing="14" RowSpacing="10">
+                    <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"
+                               Text="Your character (PMC) level"
+                               ToolTip.Tip="Your in-game PMC character level - not a FleaTrackr setting from anywhere else. The flea market unlocks at character level 15, and some items need a higher level to trade. Items above your level are flagged as locked and hidden from the Flip Finder." />
+                    <TextBox Grid.Row="0" Grid.Column="1" Width="100" HorizontalAlignment="Left"
+                             Text="{Binding PlayerFleaLevel}"
+                             ToolTip.Tip="Enter your current PMC character level (1-79). Default 15 is when the flea market unlocks." />
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"
+                               Text="Flea fee reduction (%)"
+                               ToolTip.Tip="How much to discount the estimated flea market sales fee, to match your hideout. The Intelligence Center reduces fees (about 30% at level 1), as does the Hideout Management skill. Leave at 0 if you are unsure." />
+                    <TextBox Grid.Row="1" Grid.Column="1" Width="100" HorizontalAlignment="Left"
+                             Text="{Binding FleaFeeReductionPercent}"
+                             ToolTip.Tip="0 to 100. 0 = full fee (no reduction). Higher values lower the estimated fee and raise net profit." />
+                </Grid>
+                <TextBlock TextWrapping="Wrap" FontSize="12"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                           Text="These feed the profit numbers: locked items are hidden from the Flip Finder, and the fee reduction is applied to estimated net profit on the Flip Finder and Barters and Crafts tabs. The flea fee is an estimate - real fees vary with quantity and hideout bonuses." />
+            </StackPanel>
+
+            <!-- Data -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="Data" FontWeight="SemiBold"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                <TextBlock Text="{Binding ConfigFolderPath}" FontSize="12" TextWrapping="Wrap"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                           ToolTip.Tip="Where FleaTrackr stores your settings, watchlist, and session state (plain JSON files). No account or credentials are used." />
+                <Button Content="Open config folder" Command="{Binding OpenConfigFolderCommand}"
+                        HorizontalAlignment="Left"
+                        ToolTip.Tip="Open this folder in File Explorer. Delete a file here to reset that part of the app; it is recreated with defaults on next launch." />
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

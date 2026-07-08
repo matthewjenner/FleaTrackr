@@ -21,34 +21,37 @@
                     </Grid>
 
                     <StackPanel Spacing="1">
-                        <TextBlock FontSize="12">
+                        <TextBlock FontSize="12"
+                                   ToolTip.Tip="What you hand over for this trade, valued at the cheapest way to acquire each item (flea or trader).">
                             <Run Text="Give: " Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" /><Run Text="{Binding RequirementsText}" />
                         </TextBlock>
-                        <TextBlock FontSize="12">
+                        <TextBlock FontSize="12"
+                                   ToolTip.Tip="What you receive, valued at its flea sell price (or best trader if it is not on the flea market).">
                             <Run Text="Get: " Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" /><Run Text="{Binding RewardText}" />
                         </TextBlock>
                     </StackPanel>
 
                     <!-- Cost / value / profit / ROI -->
                     <StackPanel Orientation="Horizontal" Spacing="18">
-                        <StackPanel>
+                        <StackPanel ToolTip.Tip="Total cost to acquire the input items (cheapest of flea or trader).">
                             <TextBlock Text="Cost" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
                             <TextBlock Text="{Binding InputCostText}" />
                         </StackPanel>
-                        <StackPanel>
+                        <StackPanel ToolTip.Tip="Value of the reward, net of the estimated flea sales fee when sold on the flea market.">
                             <TextBlock Text="Value" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
                             <TextBlock Text="{Binding OutputValueText}" />
                         </StackPanel>
-                        <StackPanel>
+                        <StackPanel ToolTip.Tip="Value minus cost. Shown as '-' when a required or reward item has no known price. Green is a gain, red a loss.">
                             <TextBlock Text="Profit" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
                             <TextBlock Text="{Binding ProfitText}" FontWeight="SemiBold"
                                        Foreground="{Binding ProfitValue, Converter={x:Static conv:SignToBrushConverter.Instance}}" />
                         </StackPanel>
-                        <StackPanel>
+                        <StackPanel ToolTip.Tip="Return on investment: profit as a percent of the input cost.">
                             <TextBlock Text="ROI" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
                             <TextBlock Text="{Binding RoiText}" />
                         </StackPanel>
-                        <StackPanel IsVisible="{Binding IsCraft}">
+                        <StackPanel IsVisible="{Binding IsCraft}"
+                                    ToolTip.Tip="Profit divided by the craft's duration - useful for comparing crafts that take different times.">
                             <TextBlock Text="Profit/hr" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
                             <TextBlock Text="{Binding ProfitPerHourText}" />
                         </StackPanel>
@@ -63,7 +66,8 @@
         <!-- Left: item picker -->
         <DockPanel Grid.Column="0" Margin="4">
             <TextBox DockPanel.Dock="Top" Text="{Binding Query}" Margin="0,0,0,6"
-                     PlaceholderText="Find an item (e.g. LEDX, GPU)..." />
+                     PlaceholderText="Find an item (e.g. LEDX, GPU)..."
+                     ToolTip.Tip="Search for the item you want to produce, then select it to see the barters and crafts that make it." />
             <ListBox ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedResult}">
                 <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:ItemRowViewModel">

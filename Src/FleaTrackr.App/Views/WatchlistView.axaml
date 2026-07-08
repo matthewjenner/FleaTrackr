@@ -34,7 +34,8 @@
                                             <TextBlock Text="{Binding LastRefreshedText}" FontSize="11"
                                                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
                                         </StackPanel>
-                                        <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right"
+                                                    ToolTip.Tip="Current reference price (flea sell, or the best trader when the item is not on the flea market) and its 48h change.">
                                             <TextBlock Text="{Binding PriceText}" FontSize="16" FontWeight="SemiBold"
                                                        HorizontalAlignment="Right" />
                                             <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Right"
@@ -51,7 +52,8 @@
                                             <TextBlock Text="Refresh" VerticalAlignment="Center"
                                                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
                                             <ComboBox ItemsSource="{Binding RefreshOptions}"
-                                                      SelectedItem="{Binding SelectedRefresh}" MinWidth="120">
+                                                      SelectedItem="{Binding SelectedRefresh}" MinWidth="120"
+                                                      ToolTip.Tip="How often this item checks for a new price, on its own timer. 'Manual only' never auto-refreshes - use Refresh now. Each item runs independently, so a fast one never blocks the others.">
                                                 <ComboBox.ItemTemplate>
                                                     <DataTemplate x:DataType="vm:RefreshOption">
                                                         <TextBlock Text="{Binding Label}" />
@@ -60,29 +62,40 @@
                                             </ComboBox>
                                         </StackPanel>
                                         <Button Grid.Column="2" Content="Refresh now" Margin="8,0,0,0"
-                                                Command="{Binding RefreshNowCommand}" />
+                                                Command="{Binding RefreshNowCommand}"
+                                                ToolTip.Tip="Fetch this item's price immediately, regardless of its cadence." />
                                         <Button Grid.Column="3" Content="Remove" Margin="6,0,0,0"
-                                                Command="{Binding RemoveCommand}" />
+                                                Command="{Binding RemoveCommand}"
+                                                ToolTip.Tip="Stop tracking this item and remove it from the watchlist." />
                                     </Grid>
 
                                     <!-- Alerts editor -->
-                                    <Expander Header="{Binding AlertSummary, StringFormat='Alerts: {0}'}">
+                                    <Expander Header="{Binding AlertSummary, StringFormat='Alerts: {0}'}"
+                                              ToolTip.Tip="Expand to set price alerts for this item. Alerts fire once when a condition is first met (not repeatedly) and appear in the alert feed on the right.">
                                         <StackPanel Spacing="8" Margin="0,4,0,0">
                                             <Grid ColumnDefinitions="Auto,140" RowDefinitions="Auto,Auto,Auto"
                                                   ColumnSpacing="10" RowSpacing="6">
                                                 <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"
-                                                           Text="Alert when price drops below (RUB)" />
-                                                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PriceBelow}" />
+                                                           Text="Alert when price drops below (RUB)"
+                                                           ToolTip.Tip="Notify when the reference price falls under this many roubles. Leave blank for no low alert." />
+                                                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PriceBelow}"
+                                                         ToolTip.Tip="Roubles, e.g. 100000. Blank = off." />
                                                 <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"
-                                                           Text="Alert when price rises above (RUB)" />
-                                                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PriceAbove}" />
+                                                           Text="Alert when price rises above (RUB)"
+                                                           ToolTip.Tip="Notify when the reference price rises over this many roubles. Leave blank for no high alert." />
+                                                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PriceAbove}"
+                                                         ToolTip.Tip="Roubles, e.g. 250000. Blank = off." />
                                                 <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"
-                                                           Text="Alert on 48h move exceeding (%)" />
-                                                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding PercentMove}" />
+                                                           Text="Alert on 48h move exceeding (%)"
+                                                           ToolTip.Tip="Notify when the 48h change moves more than this percent in either direction. Leave blank for no move alert." />
+                                                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding PercentMove}"
+                                                         ToolTip.Tip="Percent, e.g. 10 alerts on a move over 10 percent up or down. Blank = off." />
                                             </Grid>
                                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <Button Content="Apply alerts" Command="{Binding ApplyAlertsCommand}" />
-                                                <Button Content="Clear" Command="{Binding ClearAlertsCommand}" />
+                                                <Button Content="Apply alerts" Command="{Binding ApplyAlertsCommand}"
+                                                        ToolTip.Tip="Save these alert rules for this item." />
+                                                <Button Content="Clear" Command="{Binding ClearAlertsCommand}"
+                                                        ToolTip.Tip="Remove all alert rules from this item." />
                                             </StackPanel>
                                         </StackPanel>
                                     </Expander>
@@ -96,9 +109,11 @@
 
         <!-- Alert feed -->
         <DockPanel Grid.Column="1" Margin="4">
-            <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+            <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,6"
+                  ToolTip.Tip="A running log of alerts as they fire. The matching row also flashes when its alert triggers.">
                 <TextBlock Grid.Column="0" Text="Alerts" FontWeight="SemiBold" VerticalAlignment="Center" />
-                <Button Grid.Column="1" Content="Clear" Command="{Binding ClearAlertFeedCommand}" />
+                <Button Grid.Column="1" Content="Clear" Command="{Binding ClearAlertFeedCommand}"
+                        ToolTip.Tip="Clear the alert log below." />
             </Grid>
             <Border BorderThickness="1" CornerRadius="6"
                     BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">

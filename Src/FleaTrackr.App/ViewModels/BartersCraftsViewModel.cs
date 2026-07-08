@@ -17,17 +17,19 @@ public sealed partial class BartersCraftsViewModel : ViewModelBase
 
     private readonly ITarkovApi _api;
     private readonly Func<GameMode> _mode;
+    private readonly Func<AppSettings> _settings;
     private CancellationTokenSource? _searchCts;
 
-    public BartersCraftsViewModel(AppHost host) : this(host.Api, () => host.GameMode)
+    public BartersCraftsViewModel(AppHost host) : this(host.Api, () => host.GameMode, () => host.Settings)
     {
         host.GameModeChanged += _ => OnGameModeChanged();
     }
 
-    public BartersCraftsViewModel(ITarkovApi api, Func<GameMode> mode)
+    public BartersCraftsViewModel(ITarkovApi api, Func<GameMode> mode, Func<AppSettings>? settings = null)
     {
         _api = api;
         _mode = mode;
+        _settings = settings ?? (() => new AppSettings());
     }
 
     public ObservableCollection<ItemRowViewModel> Results { get; } = [];
@@ -102,10 +104,11 @@ public sealed partial class BartersCraftsViewModel : ViewModelBase
 
             IReadOnlyList<Barter> barters = await _api.GetBartersForAsync(id, mode);
             IReadOnlyList<Craft> crafts = await _api.GetCraftsForAsync(id, mode);
+            double feeReduction = _settings().FleaFeeReductionPercent;
 
-            foreach (TradeRowViewModel t in barters.Select(TradeRowViewModel.FromBarter).OrderByDescending(t => t.SortKey ?? int.MinValue))
+            foreach (TradeRowViewModel t in barters.Select(b => TradeRowViewModel.FromBarter(b, feeReduction)).OrderByDescending(t => t.SortKey ?? int.MinValue))
                 Barters.Add(t);
-            foreach (TradeRowViewModel t in crafts.Select(TradeRowViewModel.FromCraft).OrderByDescending(t => t.SortKey ?? int.MinValue))
+            foreach (TradeRowViewModel t in crafts.Select(c => TradeRowViewModel.FromCraft(c, feeReduction)).OrderByDescending(t => t.SortKey ?? int.MinValue))
                 Crafts.Add(t);
 
             HasBarters = Barters.Count > 0;

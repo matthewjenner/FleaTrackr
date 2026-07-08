@@ -12,7 +12,8 @@
         <DockPanel Grid.Column="0" Margin="4">
             <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
                 <TextBox Grid.Column="0" Text="{Binding Query}"
-                         PlaceholderText="Search items (e.g. GPU, LEDX, bitcoin)..." />
+                         PlaceholderText="Search items (e.g. GPU, LEDX, bitcoin)..."
+                         ToolTip.Tip="Type part of an item name. Results update as you type and show live flea prices for the selected economy." />
                 <ProgressBar Grid.Column="1" IsIndeterminate="True" Width="80" Margin="8,0,0,0"
                              VerticalAlignment="Center" IsVisible="{Binding IsBusy}" />
             </Grid>
@@ -28,7 +29,8 @@
                        Text="No items matched that search." />
 
             <ListBox ItemsSource="{Binding Results}"
-                     SelectedItem="{Binding SelectedResult}">
+                     SelectedItem="{Binding SelectedResult}"
+                     ToolTip.Tip="Each row shows the flea sell price and the 48h change (green up, red down). Select an item for full price detail.">
                 <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:ItemRowViewModel">
                         <Grid ColumnDefinitions="*,Auto,64" Margin="0,2">
@@ -78,7 +80,8 @@
                         </StackPanel>
 
                         <!-- 7-day flea price history -->
-                        <StackPanel Spacing="4">
+                        <StackPanel Spacing="4"
+                                    ToolTip.Tip="Flea sell price over the last 7 days. The dot marks the most recent point.">
                             <TextBlock Text="Flea price, last 7 days" FontSize="12"
                                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
                             <controls:Sparkline Height="64" Points="{Binding SparklinePoints}" />
@@ -87,28 +90,39 @@
                         <!-- Price breakdown -->
                         <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                               ColumnSpacing="18" RowSpacing="7">
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Flea sell" Classes="label" />
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Flea sell" Classes="label"
+                                       ToolTip.Tip="What you would receive selling this on the flea market right now (before the sales fee)." />
                             <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedResult.FleaSellText}" />
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Flea buy" Classes="label" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Flea buy" Classes="label"
+                                       ToolTip.Tip="The cheapest current asking price to buy this on the flea market." />
                             <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedResult.FleaBuyText}" />
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="24h average" Classes="label" />
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="24h average" Classes="label"
+                                       ToolTip.Tip="Average flea price over the last 24 hours." />
                             <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedResult.Avg24hText}" />
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="24h low / high" Classes="label" />
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="24h low / high" Classes="label"
+                                       ToolTip.Tip="Lowest and highest flea price seen in the last 24 hours." />
                             <TextBlock Grid.Row="3" Grid.Column="1">
                                 <Run Text="{Binding SelectedResult.Low24hText}" /><Run Text="  /  " /><Run Text="{Binding SelectedResult.High24hText}" />
                             </TextBlock>
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="48h change" Classes="label" />
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="48h change" Classes="label"
+                                       ToolTip.Tip="Percent change in flea price over the last 48 hours. Green is up, red is down." />
                             <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedResult.ChangeText}"
                                        Foreground="{Binding SelectedResult.ChangeValue, Converter={x:Static conv:SignToBrushConverter.Instance}}" />
-                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Best trader" Classes="label" />
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Best trader" Classes="label"
+                                       ToolTip.Tip="The trader that pays the most for this item, and how much (in roubles)." />
                             <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedResult.BestTraderText}" />
-                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Base price" Classes="label" />
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Base price" Classes="label"
+                                       ToolTip.Tip="The item's internal handbook value. Used to estimate the flea sales fee, not a price you can trade at." />
                             <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedResult.BasePriceText}" />
-                            <TextBlock Grid.Row="7" Grid.Column="0" Text="Offers" Classes="label" />
+                            <TextBlock Grid.Row="7" Grid.Column="0" Text="Offers" Classes="label"
+                                       ToolTip.Tip="How many active flea listings there were at the last update - a rough liquidity gauge." />
                             <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedResult.OfferCountText}" />
                         </Grid>
 
                         <StackPanel Spacing="2">
+                            <TextBlock Text="{Binding FleaLockText}" FontSize="12" FontWeight="SemiBold"
+                                       IsVisible="{Binding FleaLockText, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
                             <TextBlock Text="{Binding SelectedResult.MinFleaLevelText}" FontSize="12"
                                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
                             <TextBlock Text="{Binding SelectedResult.UpdatedText}" FontSize="12"
@@ -118,8 +132,10 @@
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button Content="{Binding AddToWatchlistText}"
                                     Command="{Binding AddToWatchlistCommand}"
-                                    IsEnabled="{Binding CanAddToWatchlist}" />
-                            <Button Content="Open wiki page" Command="{Binding OpenWikiCommand}" />
+                                    IsEnabled="{Binding CanAddToWatchlist}"
+                                    ToolTip.Tip="Track this item on the Watchlist tab, where it refreshes automatically and can raise price alerts." />
+                            <Button Content="Open wiki page" Command="{Binding OpenWikiCommand}"
+                                    ToolTip.Tip="Open this item's page on the Escape from Tarkov wiki in your browser." />
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>

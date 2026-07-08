@@ -15,7 +15,7 @@ namespace FleaTrackr.App.ViewModels;
 public sealed partial class MainWindowViewModel : ViewModelBase
 {
     /// <summary>Number of tabs in the shell; keep in step with the TabControl in MainWindow.axaml.</summary>
-    private const int TabCount = 4;
+    private const int TabCount = 5;
 
     private readonly AppHost _host;
 
@@ -31,6 +31,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Watchlist = new WatchlistViewModel(host);
         BartersCrafts = new BartersCraftsViewModel(host);
         FlipFinder = new FlipFinderViewModel(host);
+        Settings = new SettingsViewModel(host);
 
         // Restore and then persist search state (query + selection) across restarts.
         Search.RestoreSession(host.Session.LastSearchQuery, host.Session.SelectedItemId);
@@ -54,6 +55,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>Backs the Flip Finder tab (trader/flea arbitrage scan).</summary>
     public FlipFinderViewModel FlipFinder { get; }
+
+    /// <summary>Backs the Settings tab.</summary>
+    public SettingsViewModel Settings { get; }
 
     /// <summary>Initial session state, used by the window code-behind to restore geometry.</summary>
     public SessionState Session => _host.Session;

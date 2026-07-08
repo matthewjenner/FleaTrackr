@@ -23,13 +23,16 @@
                 <Button Grid.Column="1" Margin="8,0,0,0"
                         Content="Install"
                         IsEnabled="{Binding CanInstallUpdate}"
-                        Command="{Binding InstallUpdateCommand}" />
+                        Command="{Binding InstallUpdateCommand}"
+                        ToolTip.Tip="Download the new version and restart into it. Disabled when running from source (dotnet run)." />
                 <Button Grid.Column="2" Margin="8,0,0,0"
                         Content="Skip this version"
-                        Command="{Binding SkipUpdateCommand}" />
+                        Command="{Binding SkipUpdateCommand}"
+                        ToolTip.Tip="Hide this update until an even newer version is released." />
                 <Button Grid.Column="3" Margin="8,0,0,0"
                         Content="Later"
-                        Command="{Binding DismissUpdateCommand}" />
+                        Command="{Binding DismissUpdateCommand}"
+                        ToolTip.Tip="Dismiss the banner for now; it returns on the next update check." />
             </Grid>
         </Border>
 
@@ -40,12 +43,15 @@
                 <TextBlock Grid.Column="0" VerticalAlignment="Center"
                            FontSize="16" FontWeight="SemiBold" Text="FleaTrackr" />
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6"
-                            VerticalAlignment="Center">
+                            VerticalAlignment="Center"
+                            ToolTip.Tip="EFT runs two separate economies with different prices. Switch here and every tab re-queries prices for that mode.">
                     <TextBlock VerticalAlignment="Center" Margin="0,0,4,0"
                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                Text="Economy:" />
-                    <RadioButton GroupName="GameMode" Content="PVP" IsChecked="{Binding IsPvp}" />
-                    <RadioButton GroupName="GameMode" Content="PVE" IsChecked="{Binding IsPve}" />
+                    <RadioButton GroupName="GameMode" Content="PVP" IsChecked="{Binding IsPvp}"
+                                 ToolTip.Tip="Standard online PVP raids." />
+                    <RadioButton GroupName="GameMode" Content="PVE" IsChecked="{Binding IsPve}"
+                                 ToolTip.Tip="PVE (co-op / offline) economy. Prices differ from PVP." />
                 </StackPanel>
             </Grid>
         </Border>
@@ -63,6 +69,9 @@
             </TabItem>
             <TabItem Header="Flip Finder">
                 <views:FlipFinderView DataContext="{Binding FlipFinder}" />
+            </TabItem>
+            <TabItem Header="Settings">
+                <views:SettingsView DataContext="{Binding Settings}" />
             </TabItem>
         </TabControl>
     </DockPanel>

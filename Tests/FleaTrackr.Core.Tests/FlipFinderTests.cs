@@ -60,6 +60,34 @@ public class FlipFinderTests
     }
 
     [Fact]
+    public void Trader_to_flea_profit_is_net_of_the_flea_fee()
+    {
+        var item = new Item
+        {
+            Id = "gpu", Name = "GPU", BasePrice = 40_000,
+            BuyFor = [Trader("Mechanic", 100_000)],
+            SellFor = [Flea(150_000)],
+        };
+
+        FlipOpportunity op = FlipFinder.Find(item).Single();
+        int expectedFee = FleaFee.Calculate(40_000, 150_000);
+        op.Fee.Should().Be(expectedFee).And.BeGreaterThan(0);
+        op.Profit.Should().Be(150_000 - expectedFee - 100_000);
+        op.GrossProfit.Should().Be(50_000);
+    }
+
+    [Fact]
+    public void FindAll_skips_items_above_the_players_flea_level()
+    {
+        var reachable = new Item { Id = "a", Name = "a", MinLevelForFlea = 15, BuyFor = [Trader("T", 1_000)], SellFor = [Flea(50_000)] };
+        var locked = new Item { Id = "b", Name = "b", MinLevelForFlea = 40, BuyFor = [Trader("T", 1_000)], SellFor = [Flea(90_000)] };
+
+        IReadOnlyList<FlipOpportunity> result = FlipFinder.FindAll([reachable, locked], minProfit: 1_000, playerFleaLevel: 20);
+
+        result.Should().ContainSingle().Which.Item.Id.Should().Be("a", "the level-40 item is locked at player level 20");
+    }
+
+    [Fact]
     public void FindAll_ranks_by_profit_and_applies_the_minimum()
     {
         var small = new Item { Id = "s", Name = "small", BuyFor = [Trader("T", 1_000)], SellFor = [Flea(3_000)] };

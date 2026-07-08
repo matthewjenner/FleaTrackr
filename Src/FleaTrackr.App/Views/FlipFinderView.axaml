@@ -11,11 +11,15 @@
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="10" Margin="0,0,0,8"
                     VerticalAlignment="Center">
             <TextBlock Text="Min profit (RUB)" VerticalAlignment="Center"
-                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
-            <TextBox Text="{Binding MinProfit}" Width="100" />
-            <Button Content="Scan market" Command="{Binding ScanCommand}" />
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       ToolTip.Tip="Only show flips worth at least this much net profit. Defaults from Settings; change it here for this scan." />
+            <TextBox Text="{Binding MinProfit}" Width="100"
+                     ToolTip.Tip="Roubles. Raise it to hide small flips." />
+            <Button Content="Scan market" Command="{Binding ScanCommand}"
+                    ToolTip.Tip="Scan a slice of the market (up to 2000 items) for trader/flea arbitrage. Items above your character level are skipped. Uses several API requests." />
             <Button Content="Cancel" Command="{Binding ScanCancelCommand}"
-                    IsVisible="{Binding IsScanning}" />
+                    IsVisible="{Binding IsScanning}"
+                    ToolTip.Tip="Stop the scan and keep whatever was found so far." />
             <ProgressBar IsIndeterminate="True" Width="90" IsVisible="{Binding IsScanning}"
                          VerticalAlignment="Center" />
         </StackPanel>
@@ -27,11 +31,16 @@
         <!-- Column headers -->
         <Grid DockPanel.Dock="Top" ColumnDefinitions="*,150,190,190,120,90" Margin="12,0,12,4">
             <TextBlock Grid.Column="0" Text="Item" Classes="header" />
-            <TextBlock Grid.Column="1" Text="Direction" Classes="header" />
-            <TextBlock Grid.Column="2" Text="Buy" Classes="header" />
-            <TextBlock Grid.Column="3" Text="Sell" Classes="header" />
-            <TextBlock Grid.Column="4" Text="Profit" Classes="header" />
-            <TextBlock Grid.Column="5" Text="ROI" Classes="header" />
+            <TextBlock Grid.Column="1" Text="Direction" Classes="header"
+                       ToolTip.Tip="'Trader -&gt; Flea' means buy from a trader and resell on the flea market. 'Flea -&gt; Trader' means buy on the flea market and sell to a trader." />
+            <TextBlock Grid.Column="2" Text="Buy" Classes="header"
+                       ToolTip.Tip="Where you buy, and the price you pay." />
+            <TextBlock Grid.Column="3" Text="Sell" Classes="header"
+                       ToolTip.Tip="Where you sell, and the price. Trader-to-flea rows show the estimated flea fee that has already been subtracted from profit." />
+            <TextBlock Grid.Column="4" Text="Profit" Classes="header"
+                       ToolTip.Tip="Net profit per item: sell price minus the flea fee (if any) minus the buy price." />
+            <TextBlock Grid.Column="5" Text="ROI" Classes="header"
+                       ToolTip.Tip="Return on investment: profit as a percent of the buy price." />
         </Grid>
 
         <!-- Results -->
@@ -51,7 +60,7 @@
                                 <TextBlock Grid.Column="2" Text="{Binding BuyText}" VerticalAlignment="Center" />
                                 <StackPanel Grid.Column="3" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding SellText}" />
-                                    <TextBlock Text="before flea fee" FontSize="10" IsVisible="{Binding IsFleaSale}"
+                                    <TextBlock Text="{Binding FeeText}" FontSize="10" IsVisible="{Binding IsFleaSale}"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
                                 </StackPanel>
                                 <TextBlock Grid.Column="4" Text="{Binding ProfitText}" VerticalAlignment="Center"

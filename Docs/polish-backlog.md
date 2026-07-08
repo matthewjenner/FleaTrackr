@@ -5,9 +5,12 @@ refinement work, grouped by value. Each item notes **what**, **why it matters**,
 and a rough **effort** (S = a sitting, M = half a day, L = a day+). Nothing here blocks release;
 they make a good app better. Ordered so the highest-leverage items come first.
 
-## Tier 1 - Real gaps worth closing first
+## Tier 1 - DONE (shipped after v1.0.0)
 
-### 1. Add a real Settings tab  (effort: M)
+All three Tier 1 items are implemented and tested (`FleaFee` + `FleaFeeTests`, net-profit in
+`ProfitCalculator`/`FlipFinder`, the Settings tab, and flea-level gating). Kept below for history.
+
+### 1. Add a real Settings tab  (effort: M)  [DONE]
 - **What:** The empty placeholder Settings tab was removed in v1.0. Add a real one when there are
   controls to host: default economy (PVP/PVE), default watchlist refresh cadence, default Flip
   Finder min-profit, player flea-market level, currency display, theme (System/Light/Dark), "open
@@ -17,7 +20,7 @@ they make a good app better. Ordered so the highest-leverage items come first.
 - **Where:** new `SettingsViewModel` + `SettingsView`; extend `AppSettings`; add the `TabItem` back
   and bump `MainWindowViewModel.TabCount` to 5. Persist via existing `AppHost.UpdateSettings`.
 
-### 2. Net flea-market profit (subtract the sales fee)  (effort: M)
+### 2. Net flea-market profit (subtract the sales fee)  (effort: M)  [DONE]
 - **What:** Flip Finder (trader->flea) and Barters/Crafts reward values are currently **gross** of the
   flea sales fee. Implement the BSG fee formula and show net profit (keep gross available too).
 - **Why:** The fee is significant on high-value items, so gross profit overstates real returns - the
@@ -28,7 +31,7 @@ they make a good app better. Ordered so the highest-leverage items come first.
   `P0 = log10(V0/VR)` (raised to ^1.08 when VR<V0), `PR = log10(VR/V0)` (^1.08 when VR>=V0),
   `Ti = Tr = 0.03` (0.03 default; the Intelligence Center reduces it - expose as a setting later).
 
-### 3. Player flea-level awareness  (effort: S)
+### 3. Player flea-level awareness  (effort: S)  [DONE]
 - **What:** With the player level from Settings (#1), flag items whose `MinLevelForFlea` exceeds it -
   dim them and exclude from flip results (or mark "locked").
 - **Why:** A flip you cannot list yet is not actionable; today the finder can suggest them.

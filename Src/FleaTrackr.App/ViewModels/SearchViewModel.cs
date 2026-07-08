@@ -22,24 +22,24 @@ public sealed partial class SearchViewModel : ViewModelBase
     private readonly ITarkovApi _api;
     private readonly Func<GameMode> _mode;
     private readonly WatchlistService? _watchlist;
-    private readonly int _defaultRefreshSeconds;
+    private readonly Func<AppSettings> _settings;
     private CancellationTokenSource? _searchCts;
 
     /// <summary>Production constructor: wires to the app's API, PVP/PVE toggle, and watchlist.</summary>
     public SearchViewModel(AppHost host)
-        : this(host.Api, () => host.GameMode, host.Watchlist, host.Settings.DefaultRefreshSeconds)
+        : this(host.Api, () => host.GameMode, host.Watchlist, () => host.Settings)
     {
         host.GameModeChanged += _ => OnGameModeChanged();
     }
 
     /// <summary>Core constructor, injectable for tests (fake API + fixed mode; watchlist optional).</summary>
     public SearchViewModel(ITarkovApi api, Func<GameMode> mode,
-        WatchlistService? watchlist = null, int defaultRefreshSeconds = 60)
+        WatchlistService? watchlist = null, Func<AppSettings>? settings = null)
     {
         _api = api;
         _mode = mode;
         _watchlist = watchlist;
-        _defaultRefreshSeconds = defaultRefreshSeconds;
+        _settings = settings ?? (() => new AppSettings());
         if (_watchlist is not null)
         {
             _watchlist.Added += _ => RefreshWatchState();
@@ -81,10 +81,24 @@ public sealed partial class SearchViewModel : ViewModelBase
 
     partial void OnQueryChanged(string value) => _ = DebouncedSearchAsync(value);
 
+    /// <summary>Set when the selected item requires a higher flea level than the player has.</summary>
+    [ObservableProperty]
+    private string? _fleaLockText;
+
     partial void OnSelectedResultChanged(ItemRowViewModel? value)
     {
         _ = LoadDetailAsync(value);
         RefreshWatchState();
+        UpdateFleaLock(value);
+    }
+
+    private void UpdateFleaLock(ItemRowViewModel? row)
+    {
+        int? required = row?.Item.MinLevelForFlea;
+        int playerLevel = _settings().PlayerFleaLevel;
+        FleaLockText = required is { } r && r > playerLevel
+            ? $"Locked: needs character level {r} to trade on the flea market (your level is set to {playerLevel} in Settings)"
+            : null;
     }
 
     private void RefreshWatchState()
@@ -99,7 +113,7 @@ public sealed partial class SearchViewModel : ViewModelBase
     private void AddToWatchlist()
     {
         if (SelectedResult is { } row && _watchlist is not null && !_watchlist.IsWatched(row.Item.Id))
-            _watchlist.AddFromItem(row.Item, _defaultRefreshSeconds);
+            _watchlist.AddFromItem(row.Item, _settings().DefaultRefreshSeconds);
         RefreshWatchState();
     }
 

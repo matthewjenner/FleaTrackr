@@ -23,23 +23,26 @@ public sealed partial class FlipFinderViewModel : ViewModelBase
 
     private readonly ITarkovApi _api;
     private readonly Func<GameMode> _mode;
+    private readonly Func<AppSettings> _settings;
 
-    public FlipFinderViewModel(AppHost host) : this(host.Api, () => host.GameMode)
+    public FlipFinderViewModel(AppHost host) : this(host.Api, () => host.GameMode, () => host.Settings)
     {
         host.GameModeChanged += _ => OnGameModeChanged();
     }
 
-    public FlipFinderViewModel(ITarkovApi api, Func<GameMode> mode)
+    public FlipFinderViewModel(ITarkovApi api, Func<GameMode> mode, Func<AppSettings>? settings = null)
     {
         _api = api;
         _mode = mode;
+        _settings = settings ?? (() => new AppSettings());
+        _minProfit = _settings().DefaultMinProfit;
     }
 
     public ObservableCollection<FlipRowViewModel> Results { get; } = [];
 
     [ObservableProperty] private bool _isScanning;
     [ObservableProperty] private string _statusMessage = "Scan the market to find trader/flea flips.";
-    [ObservableProperty] private int _minProfit = 5_000;
+    [ObservableProperty] private int _minProfit;
 
     /// <summary>Scans the market (bounded/paged) and populates ranked flip opportunities.</summary>
     [RelayCommand(IncludeCancelCommand = true)]
@@ -60,7 +63,9 @@ public sealed partial class FlipFinderViewModel : ViewModelBase
                 await Task.Delay(InterPageDelay, ct);
             }
 
-            IReadOnlyList<FlipOpportunity> flips = FlipFinder.FindAll(items, MinProfit);
+            AppSettings settings = _settings();
+            IReadOnlyList<FlipOpportunity> flips = FlipFinder.FindAll(
+                items, MinProfit, settings.FleaFeeReductionPercent, settings.PlayerFleaLevel);
             foreach (FlipOpportunity op in flips.Take(MaxDisplay))
                 Results.Add(new FlipRowViewModel(op));
 

@@ -54,9 +54,9 @@ public sealed class TradeRowViewModel
     /// <summary>Profit for sorting; unknown profits sort last.</summary>
     public int? SortKey { get; private init; }
 
-    public static TradeRowViewModel FromBarter(Barter barter)
+    public static TradeRowViewModel FromBarter(Barter barter, double feeReductionPercent = 0)
     {
-        TradeCost cost = ProfitCalculator.ForBarter(barter);
+        TradeCost cost = ProfitCalculator.ForBarter(barter, feeReductionPercent);
         return new TradeRowViewModel(
             $"{barter.TraderName}  (Lvl {barter.TraderLevel})",
             DescribeStacks(barter.RequiredItems),
@@ -65,9 +65,9 @@ public sealed class TradeRowViewModel
         { SortKey = cost.Profit };
     }
 
-    public static TradeRowViewModel FromCraft(Craft craft)
+    public static TradeRowViewModel FromCraft(Craft craft, double feeReductionPercent = 0)
     {
-        TradeCost cost = ProfitCalculator.ForCraft(craft);
+        TradeCost cost = ProfitCalculator.ForCraft(craft, feeReductionPercent);
         return new TradeRowViewModel(
             $"{craft.StationName}  (Lvl {craft.StationLevel})",
             DescribeStacks(craft.RequiredItems),
