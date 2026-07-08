@@ -99,6 +99,26 @@ public sealed class TarkovApiClient : ITarkovApi, IDisposable
         return MapAndCache(data.Items, mode);
     }
 
+    public async Task<IReadOnlyList<Item>> GetItemsPageAsync(
+        int limit, int offset, GameMode mode, CancellationToken ct = default)
+    {
+        const string gql = ItemFields + """
+
+            query Page($limit: Int!, $offset: Int!, $mode: GameMode!) {
+              items(limit: $limit, offset: $offset, gameMode: $mode) { ...F }
+            }
+            """;
+
+        ItemsData data = await PostAsync<ItemsData>(gql, new()
+        {
+            ["limit"] = limit,
+            ["offset"] = offset,
+            ["mode"] = mode.ToApiValue(),
+        }, ct);
+
+        return MapAndCache(data.Items, mode);
+    }
+
     public async Task<IReadOnlyList<Barter>> GetBartersForAsync(
         string id, GameMode mode, CancellationToken ct = default)
     {

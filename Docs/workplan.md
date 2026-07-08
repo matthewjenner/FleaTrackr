@@ -5,12 +5,13 @@ decisions log. Update it as each phase lands.
 
 ## Current status
 
-- **Phase:** P4 complete; P5 next.
-- **Builds/tests:** `dotnet build` and `dotnet test` green, 0 warnings (41 tests: 20 Core, 21 App).
-  App launches with no binding errors; Search + Watchlist + Barters/Crafts wired. Live barter/craft
-  profit verified against the API.
+- **Phase:** P5 complete; P6 next (final phase).
+- **Builds/tests:** `dotnet build` and `dotnet test` green, 0 warnings (47 tests: 24 Core, 23 App).
+  All four feature tabs wired; app launches clean. Live flip scan verified (52 flips in first 300
+  items).
 - **Avalonia 12 API notes learned:** `TextBox.Watermark` is obsolete -> use `PlaceholderText`;
   `IsVisible` does not auto-coerce an int Count to bool (use an explicit bool property).
+- **Build gotcha:** kill any stray `FleaTrackr.App.exe` before rebuilding (it locks the output DLL).
 
 ## Phases
 
@@ -42,7 +43,11 @@ decisions log. Update it as each phase lands.
   across flea/traders, output = flea sell then best trader; null if any leg unpriced). Tab: item
   picker -> profit-ranked barter and craft lists (`TradeRowViewModel` with cost/value/profit/ROI,
   crafts add duration + profit/hour). Tests: ProfitCalculator (Core), trade load + ranking (App).
-- [ ] **P5 - Flip Finder.** `FlipFinder` bounded/paged arbitrage scan ranked by profit/ROI.
+- [x] **P5 - Flip Finder.** Core `FlipFinder` + `FlipOpportunity` (trader-buy < flea-sell, and flea
+  < trader-sell), ranked by profit with a min-profit floor. API `GetItemsPageAsync` (paged). Tab: a
+  bounded (`MaxItems` 2000, `PageSize` 200), cancellable, progress-reporting scan with a min-profit
+  input; results table (item, direction, buy, sell, profit, ROI) flags flea-sale rows as gross of
+  the market fee. Tests: FlipFinder ranking/min (Core), scan + ranking (App).
 - [ ] **P6 - Polish.** Real app icon, Velopack `UpdateService` + banner wiring, `.github/workflows/
   release.yml`, README + CLAUDE.md finalization.
 

@@ -49,7 +49,7 @@
                 <views:BartersCraftsView DataContext="{Binding BartersCrafts}" />
             </TabItem>
             <TabItem Header="Flip Finder">
-                <TextBlock Margin="16" Text="Arbitrage scan lands in P5." />
+                <views:FlipFinderView DataContext="{Binding FlipFinder}" />
             </TabItem>
             <TabItem Header="Settings">
                 <TextBlock Margin="16" Text="Settings land alongside the features that need them." />

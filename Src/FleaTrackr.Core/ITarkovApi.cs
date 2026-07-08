@@ -25,6 +25,13 @@ public interface ITarkovApi
     Task<IReadOnlyList<Item>> GetItemsByIdsAsync(
         IReadOnlyList<string> ids, GameMode mode, CancellationToken ct = default);
 
+    /// <summary>
+    /// Fetches one page of the full item list (with prices), for the Flip Finder's bounded market
+    /// scan. Returns fewer than <paramref name="limit"/> items when the end is reached.
+    /// </summary>
+    Task<IReadOnlyList<Item>> GetItemsPageAsync(
+        int limit, int offset, GameMode mode, CancellationToken ct = default);
+
     /// <summary>Barter trades that produce the given item (its <c>bartersFor</c>).</summary>
     Task<IReadOnlyList<Barter>> GetBartersForAsync(string id, GameMode mode, CancellationToken ct = default);
 

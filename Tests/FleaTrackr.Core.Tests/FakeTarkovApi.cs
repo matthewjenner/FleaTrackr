@@ -58,6 +58,15 @@ public sealed class FakeTarkovApi : ITarkovApi
         return Task.FromResult(hits);
     }
 
+    public Task<IReadOnlyList<Item>> GetItemsPageAsync(
+        int limit, int offset, GameMode mode, CancellationToken ct = default)
+    {
+        LastMode = mode;
+        FetchCount++;
+        IReadOnlyList<Item> page = _items.Values.Skip(offset).Take(limit).ToList();
+        return Task.FromResult(page);
+    }
+
     public Task<IReadOnlyList<Barter>> GetBartersForAsync(string id, GameMode mode, CancellationToken ct = default)
     {
         LastMode = mode;

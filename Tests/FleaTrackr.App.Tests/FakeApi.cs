@@ -43,6 +43,9 @@ public sealed class FakeApi : ITarkovApi
         return Task.FromResult<IReadOnlyList<Item>>(ids.Where(_items.ContainsKey).Select(id => _items[id]).ToList());
     }
 
+    public Task<IReadOnlyList<Item>> GetItemsPageAsync(int limit, int offset, GameMode mode, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<Item>>(_items.Values.Skip(offset).Take(limit).ToList());
+
     public Task<IReadOnlyList<Barter>> GetBartersForAsync(string id, GameMode mode, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<Barter>>(_barters.GetValueOrDefault(id) ?? []);
 
