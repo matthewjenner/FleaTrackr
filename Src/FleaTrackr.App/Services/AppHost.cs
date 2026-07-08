@@ -36,7 +36,13 @@ public sealed class AppHost : IDisposable
             Watchlist.InvalidateForModeChange();
             UpdateSession(s => s with { GameMode = mode });
         };
+
+        // Built last so it can read Settings.SkippedUpdateVersion and call back into UpdateSettings.
+        Updates = new UpdateService(this);
     }
+
+    /// <summary>Tracks the latest GitHub release and backs the main window's update banner.</summary>
+    public UpdateService Updates { get; }
 
     /// <summary>The tarkov.dev market API. ViewModels query prices/barters/crafts through this.</summary>
     public ITarkovApi Api => _apiClient;
@@ -84,6 +90,7 @@ public sealed class AppHost : IDisposable
 
     public void Dispose()
     {
+        Updates.Dispose();
         Watchlist.Dispose();
         _sessionStore.Dispose(); // flushes any pending session write
         _apiClient.Dispose();

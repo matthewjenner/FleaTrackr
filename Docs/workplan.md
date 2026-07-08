@@ -5,13 +5,16 @@ decisions log. Update it as each phase lands.
 
 ## Current status
 
-- **Phase:** P5 complete; P6 next (final phase).
+- **Phase:** All phases (P0-P6) complete. Feature-complete v1.
 - **Builds/tests:** `dotnet build` and `dotnet test` green, 0 warnings (47 tests: 24 Core, 23 App).
-  All four feature tabs wired; app launches clean. Live flip scan verified (52 flips in first 300
-  items).
+  All four feature tabs wired; app launches clean. Live search/barter/craft/flip all verified
+  against the API.
 - **Avalonia 12 API notes learned:** `TextBox.Watermark` is obsolete -> use `PlaceholderText`;
   `IsVisible` does not auto-coerce an int Count to bool (use an explicit bool property).
 - **Build gotcha:** kill any stray `FleaTrackr.App.exe` before rebuilding (it locks the output DLL).
+- **Remaining before first release:** the GitHub repo must be **public** and have at least one
+  release for the in-app updater to work; push to `main` triggers `release.yml` (after a version
+  bump). Optional future polish: OS toast notifications, flea-fee-net flip profit, richer charts.
 
 ## Phases
 
@@ -48,8 +51,10 @@ decisions log. Update it as each phase lands.
   bounded (`MaxItems` 2000, `PageSize` 200), cancellable, progress-reporting scan with a min-profit
   input; results table (item, direction, buy, sell, profit, ROI) flags flea-sale rows as gross of
   the market fee. Tests: FlipFinder ranking/min (Core), scan + ranking (App).
-- [ ] **P6 - Polish.** Real app icon, Velopack `UpdateService` + banner wiring, `.github/workflows/
-  release.yml`, README + CLAUDE.md finalization.
+- [x] **P6 - Polish.** Real app icon (built from the user's PNG via ImageMagick, multi-resolution).
+  Velopack `UpdateService` (hourly GitHub poll, skip/dismiss/install) wired into `AppHost` +
+  the main-window banner (Install/Skip/Later). `.github/workflows/release.yml` (version-gated,
+  Velopack `vpk pack`, idempotent). README written; CLAUDE.md finalized.
 
 ## Decisions log
 

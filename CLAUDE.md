@@ -26,22 +26,24 @@ This file is the quick orientation - read it first.
 
 ```
 Src/FleaTrackr.Core/     Pure logic, no UI/HTTP/IO. Fully unit-tested.
-   Models/               GameMode (+ more in P1: Item, PriceSnapshot, VendorPrice, Barter, Craft,
-                         HistoricalPricePoint), ITarkovApi (network contract as an interface)
-   Pricing/              ProfitCalculator, FlipFinder, PriceFormat            (P4/P5)
-   Watchlist/            AlertRule, AlertEvaluator, RefreshPolicy             (P3)
+   Models/               GameMode, Item, PriceSnapshot, VendorPrice, ItemStack, Barter, Craft,
+                         HistoricalPricePoint; ITarkovApi (network contract as an interface)
+   Pricing/              PriceFormat, ProfitCalculator/TradeCost, FlipFinder/FlipOpportunity
+   Watchlist/            AlertRule/AlertKind, AlertEvaluator, RefreshPolicy, WatchedItemConfig
 Src/FleaTrackr.App/      Avalonia app + all I/O.
    Services/             AppHost (composition root), AppPaths, AppSettings, SettingsStore,
-                         AtomicJson (crash-safe temp+move writes), and later TarkovApiClient,
-                         ItemCache, WatchlistStore, SessionStore, RefreshScheduler, AlertService,
-                         UpdateService, AppVersion
-   ViewModels/           MainWindow + one per tab, ViewModelBase
+                         AtomicJson (crash-safe temp+move writes), TarkovApiClient + DTOs,
+                         ItemCache, ImageLoader, WatchlistStore, WatchlistService, RefreshScheduler,
+                         SessionStore/SessionState, UpdateService, AppVersion
+   Controls/             Sparkline (custom-drawn price history)
+   Converters/           SignToBrushConverter, AlertHighlightConverter
+   ViewModels/           MainWindow + one per tab, row VMs, ViewModelBase
    Views/                MainWindow + one View per tab
 Tests/FleaTrackr.Core.Tests/   xUnit (v2) for Core, against an in-memory ITarkovApi fake.
-Tests/FleaTrackr.App.Tests/    Headless Avalonia (xunit v3) - shell/layout regression.
+Tests/FleaTrackr.App.Tests/    Headless Avalonia (xunit v3) - VM/client/store/scheduler tests.
 Docs/                    DESIGN.md, TECHARCH.md, workplan.md.
 Scripts/                 run.sh (clean+build+run), bump-version.sh.
-.github/workflows/       release.yml - reads Directory.Build.props, ships via Velopack (P6).
+.github/workflows/       release.yml - reads Directory.Build.props, ships via Velopack.
 Directory.Build.props    Single source of truth for the app version.
 ```
 
@@ -93,8 +95,8 @@ batches due items; `AlertEvaluator` (Core, pure) turns each snapshot into trigge
 All under `%APPDATA%\FleaTrackr\`, every write via `AtomicJson` (temp file + move) so a crash
 mid-write never corrupts a file:
 - `settings.json` (`SettingsStore`) - game mode default, refresh/alert defaults.
-- `watchlist.json` (`WatchlistStore`, P3) - pinned items + per-item interval + alert rules.
-- `session.json` (`SessionStore`, P3) - UI state for restore-on-reopen: active tab, window
+- `watchlist.json` (`WatchlistStore`) - pinned items + per-item interval + alert rules.
+- `session.json` (`SessionStore`) - UI state for restore-on-reopen: active tab, window
   geometry, PVP/PVE mode, last search + selection. **Written debounced on change, not only on
   close**, so a hard crash still restores the last state. A missing/invalid file falls back to
   defaults and is never fatal.
@@ -117,7 +119,7 @@ mid-write never corrupts a file:
 - `./Scripts/bump-version.sh` (default Patch; pass `Minor`/`Major`) bumps it. Do this whenever a
   feature or behavior change is complete and will ship, ideally in the same commit. Do NOT bump for
   docs, comments, or refactors with no user-visible effect.
-- Push to `main`: `.github/workflows/release.yml` (P6) reads the version, skips if the `vX.Y.Z`
+- Push to `main`: `.github/workflows/release.yml` reads the version, skips if the `vX.Y.Z`
   release already exists, else tests + publishes win-x64 self-contained + `vpk pack --packId
   FleaTrackr --mainExe FleaTrackr.App.exe` + creates the GitHub release. CI never commits.
 - The repo MUST be public for the in-app update check (unauthenticated `GithubSource`) to work.
