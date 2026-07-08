@@ -46,7 +46,7 @@
                 <views:WatchlistView DataContext="{Binding Watchlist}" />
             </TabItem>
             <TabItem Header="Barters &amp; Crafts">
-                <TextBlock Margin="16" Text="Barter and craft profit lands in P4." />
+                <views:BartersCraftsView DataContext="{Binding BartersCrafts}" />
             </TabItem>
             <TabItem Header="Flip Finder">
                 <TextBlock Margin="16" Text="Arbitrage scan lands in P5." />

@@ -24,6 +24,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         Search = new SearchViewModel(host);
         Watchlist = new WatchlistViewModel(host);
+        BartersCrafts = new BartersCraftsViewModel(host);
 
         // Restore and then persist search state (query + selection) across restarts.
         Search.RestoreSession(host.Session.LastSearchQuery, host.Session.SelectedItemId);
@@ -38,6 +39,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>Backs the Watchlist tab (tracked items, per-item refresh, alerts).</summary>
     public WatchlistViewModel Watchlist { get; }
+
+    /// <summary>Backs the Barters &amp; Crafts tab (trade profit vs current flea prices).</summary>
+    public BartersCraftsViewModel BartersCrafts { get; }
 
     /// <summary>Initial session state, used by the window code-behind to restore geometry.</summary>
     public SessionState Session => _host.Session;

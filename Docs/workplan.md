@@ -5,10 +5,12 @@ decisions log. Update it as each phase lands.
 
 ## Current status
 
-- **Phase:** P3 complete; P4 next.
-- **Builds/tests:** `dotnet build` and `dotnet test` green, 0 warnings (34 tests: 15 Core, 19 App).
-  App launches with no binding errors; Search + Watchlist wired; `session.json` persists on run.
-- **Avalonia 12 API notes learned:** `TextBox.Watermark` is obsolete -> use `PlaceholderText`.
+- **Phase:** P4 complete; P5 next.
+- **Builds/tests:** `dotnet build` and `dotnet test` green, 0 warnings (41 tests: 20 Core, 21 App).
+  App launches with no binding errors; Search + Watchlist + Barters/Crafts wired. Live barter/craft
+  profit verified against the API.
+- **Avalonia 12 API notes learned:** `TextBox.Watermark` is obsolete -> use `PlaceholderText`;
+  `IsVisible` does not auto-coerce an int Count to bool (use an explicit bool property).
 
 ## Phases
 
@@ -36,7 +38,10 @@ decisions log. Update it as each phase lands.
   Add-to-Watchlist on Search, window-geometry + tab + query/selection + mode restore wired through
   `MainWindow`. Tests: RefreshPolicy, AlertEvaluator, RefreshScheduler ticks, WatchlistService
   persistence, SessionStore/WatchlistStore round-trips.
-- [ ] **P4 - Barters & Crafts.** `ProfitCalculator` (input cost vs output flea value), sorted list.
+- [x] **P4 - Barters & Crafts.** Core `ProfitCalculator` + `TradeCost` (input = cheapest acquisition
+  across flea/traders, output = flea sell then best trader; null if any leg unpriced). Tab: item
+  picker -> profit-ranked barter and craft lists (`TradeRowViewModel` with cost/value/profit/ROI,
+  crafts add duration + profit/hour). Tests: ProfitCalculator (Core), trade load + ranking (App).
 - [ ] **P5 - Flip Finder.** `FlipFinder` bounded/paged arbitrage scan ranked by profit/ROI.
 - [ ] **P6 - Polish.** Real app icon, Velopack `UpdateService` + banner wiring, `.github/workflows/
   release.yml`, README + CLAUDE.md finalization.
