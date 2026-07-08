@@ -66,7 +66,11 @@ over HttpClient) and executes against it. Profit math, flip ranking, alert evalu
 refresh scheduling logic live in Core so they are testable with an in-memory `ITarkovApi` fake and
 no live API. Do not pull Avalonia, HttpClient, or filesystem calls into Core.
 
-## The tabs (Search | Watchlist | Barters & Crafts | Flip Finder | Settings)
+## The tabs (Search | Watchlist | Barters & Crafts | Flip Finder)
+
+A Settings tab is intentionally absent until there are user-editable settings to host (see
+`Docs/polish-backlog.md`); today's settings use sensible defaults. `TabCount` in
+`MainWindowViewModel` must stay in step with the tabs and the restored-index clamp.
 
 The shell is a `DockPanel`: update banner docked top, an app header with the **PVP/PVE economy
 toggle** (bound to `AppHost.GameMode` - changing it re-queries the active tab), then a `TabControl`.

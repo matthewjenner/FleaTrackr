@@ -64,9 +64,6 @@
             <TabItem Header="Flip Finder">
                 <views:FlipFinderView DataContext="{Binding FlipFinder}" />
             </TabItem>
-            <TabItem Header="Settings">
-                <TextBlock Margin="16" Text="Settings land alongside the features that need them." />
-            </TabItem>
         </TabControl>
     </DockPanel>
 </Window>

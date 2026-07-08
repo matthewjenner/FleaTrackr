@@ -14,13 +14,17 @@ namespace FleaTrackr.App.ViewModels;
 /// </summary>
 public sealed partial class MainWindowViewModel : ViewModelBase
 {
+    /// <summary>Number of tabs in the shell; keep in step with the TabControl in MainWindow.axaml.</summary>
+    private const int TabCount = 4;
+
     private readonly AppHost _host;
 
     public MainWindowViewModel(AppHost host)
     {
         _host = host;
         _isPve = host.GameMode == GameMode.Pve;
-        _activeTabIndex = host.Session.ActiveTabIndex;
+        // Clamp the restored tab index so a stale value (e.g. a removed tab) never selects nothing.
+        _activeTabIndex = Math.Clamp(host.Session.ActiveTabIndex, 0, TabCount - 1);
         _host.GameModeChanged += OnGameModeChanged;
 
         Search = new SearchViewModel(host);

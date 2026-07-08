@@ -34,10 +34,21 @@ public partial class MainWindow : Window
         Width = s.WindowWidth;
         Height = s.WindowHeight;
 
+        // Only honour a saved position if it still lands on a connected screen. This guards against
+        // a stale position from a now-disconnected monitor and the (-32000,-32000) sentinel Windows
+        // reports for a minimized window; otherwise center and scrub the bad coordinates so they
+        // do not persist into the next launch.
         if (s.WindowX is { } x && s.WindowY is { } y)
         {
-            WindowStartupLocation = WindowStartupLocation.Manual;
-            Position = new PixelPoint(x, y);
+            if (IsOnAnyScreen(new PixelPoint(x, y)))
+            {
+                WindowStartupLocation = WindowStartupLocation.Manual;
+                Position = new PixelPoint(x, y);
+            }
+            else
+            {
+                vm.PersistWindow(s.WindowWidth, s.WindowHeight, null, null, s.Maximized);
+            }
         }
 
         if (s.Maximized)
@@ -50,14 +61,26 @@ public partial class MainWindow : Window
     {
         if (!_restored || Vm is not { } vm) return;
 
-        bool maximized = WindowState == WindowState.Maximized;
+        // Never persist geometry while minimized: a minimized window reports its position as
+        // (-32000,-32000), which would otherwise be saved and restored off-screen next launch.
+        if (WindowState == WindowState.Minimized) return;
 
-        // Only capture size/position while in the normal state, so a maximized window does not
-        // overwrite the remembered restore bounds.
-        if (maximized)
+        if (WindowState == WindowState.Maximized)
+            // Keep the remembered normal bounds; only record that we were maximized.
             vm.PersistWindow(vm.Session.WindowWidth, vm.Session.WindowHeight,
                 vm.Session.WindowX, vm.Session.WindowY, maximized: true);
         else
             vm.PersistWindow(Width, Height, Position.X, Position.Y, maximized: false);
+    }
+
+    /// <summary>True if <paramref name="point"/> falls within the bounds of any connected screen.</summary>
+    private bool IsOnAnyScreen(PixelPoint point)
+    {
+        IReadOnlyList<Avalonia.Platform.Screen>? all = Screens?.All;
+        if (all is null || all.Count == 0) return true; // can't verify - trust the saved value
+        foreach (Avalonia.Platform.Screen screen in all)
+            if (screen.Bounds.Contains(point))
+                return true;
+        return false;
     }
 }
