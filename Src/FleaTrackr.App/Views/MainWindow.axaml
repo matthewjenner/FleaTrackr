@@ -1,0 +1,59 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FleaTrackr.App.ViewModels"
+        xmlns:views="using:FleaTrackr.App.Views"
+        x:Class="FleaTrackr.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/icon.ico"
+        Title="{Binding Title}"
+        Width="1040" Height="680"
+        MinWidth="820" MinHeight="520"
+        WindowStartupLocation="CenterScreen">
+
+    <DockPanel>
+        <!-- Update banner: docked at the very top, shown only when a newer release exists. -->
+        <Border DockPanel.Dock="Top"
+                IsVisible="{Binding IsUpdateBannerVisible}"
+                Background="#1F6FEB" Padding="12,8">
+            <TextBlock VerticalAlignment="Center"
+                       Foreground="White"
+                       Text="{Binding UpdateBannerText}" />
+        </Border>
+
+        <!-- App header: title + the PVP/PVE economy toggle that drives every price query. -->
+        <Border DockPanel.Dock="Top" Padding="12,8" BorderThickness="0,0,0,1"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                           FontSize="16" FontWeight="SemiBold" Text="FleaTrackr" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6"
+                            VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center" Margin="0,0,4,0"
+                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                               Text="Economy:" />
+                    <RadioButton GroupName="GameMode" Content="PVP" IsChecked="{Binding IsPvp}" />
+                    <RadioButton GroupName="GameMode" Content="PVE" IsChecked="{Binding IsPve}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Tab content. Each TabItem gets its real View/ViewModel in the phase that builds it. -->
+        <TabControl Margin="8">
+            <TabItem Header="Search">
+                <views:SearchView DataContext="{Binding Search}" />
+            </TabItem>
+            <TabItem Header="Watchlist">
+                <TextBlock Margin="16" Text="Watchlist, alerts, and per-item refresh land in P3." />
+            </TabItem>
+            <TabItem Header="Barters &amp; Crafts">
+                <TextBlock Margin="16" Text="Barter and craft profit lands in P4." />
+            </TabItem>
+            <TabItem Header="Flip Finder">
+                <TextBlock Margin="16" Text="Arbitrage scan lands in P5." />
+            </TabItem>
+            <TabItem Header="Settings">
+                <TextBlock Margin="16" Text="Settings land alongside the features that need them." />
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

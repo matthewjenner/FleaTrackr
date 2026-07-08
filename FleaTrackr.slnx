@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Src/">
+    <Project Path="Src/FleaTrackr.App/FleaTrackr.App.csproj" />
+    <Project Path="Src/FleaTrackr.Core/FleaTrackr.Core.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/FleaTrackr.App.Tests/FleaTrackr.App.Tests.csproj" />
+    <Project Path="Tests/FleaTrackr.Core.Tests/FleaTrackr.Core.Tests.csproj" />
+  </Folder>
+</Solution>

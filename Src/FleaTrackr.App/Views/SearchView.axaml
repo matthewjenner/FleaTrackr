@@ -1,0 +1,130 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FleaTrackr.App.ViewModels"
+             xmlns:controls="using:FleaTrackr.App.Controls"
+             xmlns:conv="using:FleaTrackr.App.Converters"
+             x:Class="FleaTrackr.App.Views.SearchView"
+             x:DataType="vm:SearchViewModel">
+
+    <Grid ColumnDefinitions="380,*" Margin="4">
+
+        <!-- Left: search box + results list -->
+        <DockPanel Grid.Column="0" Margin="4">
+            <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                <TextBox Grid.Column="0" Text="{Binding Query}"
+                         PlaceholderText="Search items (e.g. GPU, LEDX, bitcoin)..." />
+                <ProgressBar Grid.Column="1" IsIndeterminate="True" Width="80" Margin="8,0,0,0"
+                             VerticalAlignment="Center" IsVisible="{Binding IsBusy}" />
+            </Grid>
+
+            <TextBlock DockPanel.Dock="Bottom" Margin="2,6,0,0" TextWrapping="Wrap"
+                       Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}"
+                       IsVisible="{Binding StatusMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       Text="{Binding StatusMessage}" />
+
+            <TextBlock DockPanel.Dock="Bottom" Margin="2,6,0,0"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       IsVisible="{Binding IsEmptyResult}"
+                       Text="No items matched that search." />
+
+            <ListBox ItemsSource="{Binding Results}"
+                     SelectedItem="{Binding SelectedResult}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ItemRowViewModel">
+                        <Grid ColumnDefinitions="*,Auto,64" Margin="0,2">
+                            <StackPanel Grid.Column="0" Spacing="1">
+                                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding ShortName}" FontSize="11"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="6,0"
+                                       Text="{Binding FleaSellText}" />
+                            <TextBlock Grid.Column="2" VerticalAlignment="Center"
+                                       HorizontalAlignment="Right" Text="{Binding ChangeText}"
+                                       Foreground="{Binding ChangeValue, Converter={x:Static conv:SignToBrushConverter.Instance}}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+
+        <!-- Right: detail pane for the selected item -->
+        <Border Grid.Column="1" Margin="4" Padding="16" BorderThickness="1" CornerRadius="6"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+
+            <Panel>
+                <!-- Placeholder shown until an item is selected. -->
+                <TextBlock IsVisible="{Binding SelectedResult, Converter={x:Static ObjectConverters.IsNull}}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                           Text="Select an item to see its prices." />
+
+                <!-- Detail binds off SearchViewModel via SelectedResult.* so the sparkline, icon,
+                     and wiki command (which live on the parent VM) need no parent traversal. -->
+                <ScrollViewer IsVisible="{Binding SelectedResult, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <StackPanel Spacing="14">
+
+                        <!-- Header: icon + names -->
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Border Width="64" Height="64" Background="#22808080" CornerRadius="4">
+                                <Image Source="{Binding SelectedIcon}" Stretch="Uniform" />
+                            </Border>
+                            <StackPanel VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="{Binding SelectedResult.Name}" FontSize="18" FontWeight="SemiBold"
+                                           TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding SelectedResult.ShortName}"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- 7-day flea price history -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Flea price, last 7 days" FontSize="12"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                            <controls:Sparkline Height="64" Points="{Binding SparklinePoints}" />
+                        </StackPanel>
+
+                        <!-- Price breakdown -->
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                              ColumnSpacing="18" RowSpacing="7">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Flea sell" Classes="label" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedResult.FleaSellText}" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Flea buy" Classes="label" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedResult.FleaBuyText}" />
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="24h average" Classes="label" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedResult.Avg24hText}" />
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="24h low / high" Classes="label" />
+                            <TextBlock Grid.Row="3" Grid.Column="1">
+                                <Run Text="{Binding SelectedResult.Low24hText}" /><Run Text="  /  " /><Run Text="{Binding SelectedResult.High24hText}" />
+                            </TextBlock>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="48h change" Classes="label" />
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedResult.ChangeText}"
+                                       Foreground="{Binding SelectedResult.ChangeValue, Converter={x:Static conv:SignToBrushConverter.Instance}}" />
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Best trader" Classes="label" />
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedResult.BestTraderText}" />
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Base price" Classes="label" />
+                            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedResult.BasePriceText}" />
+                            <TextBlock Grid.Row="7" Grid.Column="0" Text="Offers" Classes="label" />
+                            <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedResult.OfferCountText}" />
+                        </Grid>
+
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{Binding SelectedResult.MinFleaLevelText}" FontSize="12"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                            <TextBlock Text="{Binding SelectedResult.UpdatedText}" FontSize="12"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                        </StackPanel>
+
+                        <Button Content="Open wiki page" Command="{Binding OpenWikiCommand}" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Panel>
+        </Border>
+    </Grid>
+
+    <UserControl.Styles>
+        <Style Selector="TextBlock.label">
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+        </Style>
+    </UserControl.Styles>
+</UserControl>

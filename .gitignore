@@ -1,0 +1,20 @@
+# Build output
+bin/
+obj/
+publish/
+Releases/
+
+# Velopack local packaging output
+*.nupkg
+
+# IDE / editor
+.vs/
+.idea/
+*.user
+
+# OS cruft
+Thumbs.db
+.DS_Store
+
+# Local-only settings overrides (the real config lives under %APPDATA%\FleaTrackr at runtime)
+settings.local.json
