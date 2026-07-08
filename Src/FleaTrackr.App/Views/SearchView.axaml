@@ -115,7 +115,12 @@
                                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
                         </StackPanel>
 
-                        <Button Content="Open wiki page" Command="{Binding OpenWikiCommand}" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="{Binding AddToWatchlistText}"
+                                    Command="{Binding AddToWatchlistCommand}"
+                                    IsEnabled="{Binding CanAddToWatchlist}" />
+                            <Button Content="Open wiki page" Command="{Binding OpenWikiCommand}" />
+                        </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </Panel>

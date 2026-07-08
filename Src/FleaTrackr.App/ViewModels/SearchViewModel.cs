@@ -21,19 +21,30 @@ public sealed partial class SearchViewModel : ViewModelBase
 
     private readonly ITarkovApi _api;
     private readonly Func<GameMode> _mode;
+    private readonly WatchlistService? _watchlist;
+    private readonly int _defaultRefreshSeconds;
     private CancellationTokenSource? _searchCts;
 
-    /// <summary>Production constructor: wires to the app's API and reacts to the PVP/PVE toggle.</summary>
-    public SearchViewModel(AppHost host) : this(host.Api, () => host.GameMode)
+    /// <summary>Production constructor: wires to the app's API, PVP/PVE toggle, and watchlist.</summary>
+    public SearchViewModel(AppHost host)
+        : this(host.Api, () => host.GameMode, host.Watchlist, host.Settings.DefaultRefreshSeconds)
     {
         host.GameModeChanged += _ => OnGameModeChanged();
     }
 
-    /// <summary>Core constructor, injectable for tests (fake API + fixed/served game mode).</summary>
-    public SearchViewModel(ITarkovApi api, Func<GameMode> mode)
+    /// <summary>Core constructor, injectable for tests (fake API + fixed mode; watchlist optional).</summary>
+    public SearchViewModel(ITarkovApi api, Func<GameMode> mode,
+        WatchlistService? watchlist = null, int defaultRefreshSeconds = 60)
     {
         _api = api;
         _mode = mode;
+        _watchlist = watchlist;
+        _defaultRefreshSeconds = defaultRefreshSeconds;
+        if (_watchlist is not null)
+        {
+            _watchlist.Added += _ => RefreshWatchState();
+            _watchlist.Removed += _ => RefreshWatchState();
+        }
     }
 
     public ObservableCollection<ItemRowViewModel> Results { get; } = [];
@@ -60,9 +71,37 @@ public sealed partial class SearchViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isEmptyResult;
 
+    /// <summary>Text for the Add-to-Watchlist button, reflecting whether the item is already watched.</summary>
+    [ObservableProperty]
+    private string _addToWatchlistText = "Add to watchlist";
+
+    /// <summary>Whether the selected item can be added (a selection exists and is not already watched).</summary>
+    [ObservableProperty]
+    private bool _canAddToWatchlist;
+
     partial void OnQueryChanged(string value) => _ = DebouncedSearchAsync(value);
 
-    partial void OnSelectedResultChanged(ItemRowViewModel? value) => _ = LoadDetailAsync(value);
+    partial void OnSelectedResultChanged(ItemRowViewModel? value)
+    {
+        _ = LoadDetailAsync(value);
+        RefreshWatchState();
+    }
+
+    private void RefreshWatchState()
+    {
+        string? id = SelectedResult?.Item.Id;
+        bool watched = id is not null && _watchlist?.IsWatched(id) == true;
+        CanAddToWatchlist = _watchlist is not null && id is not null && !watched;
+        AddToWatchlistText = watched ? "On your watchlist" : "Add to watchlist";
+    }
+
+    [RelayCommand]
+    private void AddToWatchlist()
+    {
+        if (SelectedResult is { } row && _watchlist is not null && !_watchlist.IsWatched(row.Item.Id))
+            _watchlist.AddFromItem(row.Item, _defaultRefreshSeconds);
+        RefreshWatchState();
+    }
 
     private async Task DebouncedSearchAsync(string query)
     {
@@ -90,6 +129,16 @@ public sealed partial class SearchViewModel : ViewModelBase
         }
     }
 
+    private string? _pendingSelectId;
+
+    /// <summary>Restores the last search query and (best-effort) selection from a previous session.</summary>
+    public void RestoreSession(string query, string? selectedId)
+    {
+        if (string.IsNullOrWhiteSpace(query)) return;
+        _pendingSelectId = selectedId;
+        Query = query; // triggers a debounced search; selection is applied once results load
+    }
+
     /// <summary>Runs the search for the current <see cref="Query"/> immediately (no debounce).</summary>
     public Task SearchAsync(CancellationToken ct = default) => RunSearchAsync(Query, ct);
 
@@ -107,6 +156,13 @@ public sealed partial class SearchViewModel : ViewModelBase
                 Results.Add(new ItemRowViewModel(item));
 
             IsEmptyResult = Results.Count == 0;
+
+            // Reapply a restored selection once its row exists.
+            if (_pendingSelectId is { } id)
+            {
+                SelectedResult = Results.FirstOrDefault(r => r.Item.Id == id);
+                _pendingSelectId = null;
+            }
         }
         catch (OperationCanceledException)
         {

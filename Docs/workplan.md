@@ -5,9 +5,9 @@ decisions log. Update it as each phase lands.
 
 ## Current status
 
-- **Phase:** P2 complete; P3 next.
-- **Builds/tests:** `dotnet build` and `dotnet test` green, 0 warnings (14 tests: 6 Core, 8 App).
-  App launches with no binding errors; Search tab wired to the live API.
+- **Phase:** P3 complete; P4 next.
+- **Builds/tests:** `dotnet build` and `dotnet test` green, 0 warnings (34 tests: 15 Core, 19 App).
+  App launches with no binding errors; Search + Watchlist wired; `session.json` persists on run.
 - **Avalonia 12 API notes learned:** `TextBox.Watermark` is obsolete -> use `PlaceholderText`.
 
 ## Phases
@@ -27,9 +27,15 @@ decisions log. Update it as each phase lands.
   level, wiki link). Economy toggle re-queries + repriced detail. `PriceFormat` (Core),
   `SignToBrushConverter`, `ItemRowViewModel`. Tests drive the VM through the real client + stub HTTP.
   (Add-to-Watchlist button deferred to P3, where the watchlist model lands.)
-- [ ] **P3 - Watchlist + non-blocking refresh + alerts + session restore.** `RefreshScheduler`
-  (per-item `PeriodicTimer`, off-UI-thread), pure `RefreshPolicy` + `AlertEvaluator` in Core,
-  `WatchlistStore`, `AlertService`, and `SessionStore` (debounced, crash-safe UI-state restore).
+- [x] **P3 - Watchlist + non-blocking refresh + alerts + session restore.** Core: `AlertRule`/
+  `AlertKind`, edge-triggered `AlertEvaluator`, pure `RefreshPolicy`, `WatchedItemConfig`,
+  `TriggeredAlert`. App: `RefreshScheduler` (one background loop, batched due-item fetches off the
+  UI thread, `TickAsync` testable), `WatchlistService` (persist + scheduler + events),
+  `WatchlistStore`, `SessionStore` (debounced, atomic, crash-safe) + `SessionState`. UI: Watchlist
+  tab (per-row live price/trend, editable cadence dropdown, inline alert editor, alert feed),
+  Add-to-Watchlist on Search, window-geometry + tab + query/selection + mode restore wired through
+  `MainWindow`. Tests: RefreshPolicy, AlertEvaluator, RefreshScheduler ticks, WatchlistService
+  persistence, SessionStore/WatchlistStore round-trips.
 - [ ] **P4 - Barters & Crafts.** `ProfitCalculator` (input cost vs output flea value), sorted list.
 - [ ] **P5 - Flip Finder.** `FlipFinder` bounded/paged arbitrage scan ranked by profit/ROI.
 - [ ] **P6 - Polish.** Real app icon, Velopack `UpdateService` + banner wiring, `.github/workflows/

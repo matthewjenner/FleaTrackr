@@ -38,12 +38,12 @@
         </Border>
 
         <!-- Tab content. Each TabItem gets its real View/ViewModel in the phase that builds it. -->
-        <TabControl Margin="8">
+        <TabControl Margin="8" SelectedIndex="{Binding ActiveTabIndex}">
             <TabItem Header="Search">
                 <views:SearchView DataContext="{Binding Search}" />
             </TabItem>
             <TabItem Header="Watchlist">
-                <TextBlock Margin="16" Text="Watchlist, alerts, and per-item refresh land in P3." />
+                <views:WatchlistView DataContext="{Binding Watchlist}" />
             </TabItem>
             <TabItem Header="Barters &amp; Crafts">
                 <TextBlock Margin="16" Text="Barter and craft profit lands in P4." />
