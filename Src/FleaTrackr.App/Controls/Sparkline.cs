@@ -24,10 +24,20 @@ public sealed class Sparkline : Control
     public static readonly StyledProperty<double> StrokeThicknessProperty =
         AvaloniaProperty.Register<Sparkline, double>(nameof(StrokeThickness), 1.5);
 
+    /// <summary>Optional fill under the line (a soft tint reads better than a bare stroke).</summary>
+    public static readonly StyledProperty<IBrush?> FillProperty =
+        AvaloniaProperty.Register<Sparkline, IBrush?>(nameof(Fill));
+
     static Sparkline()
     {
         // Any of these changing must trigger a repaint.
-        AffectsRender<Sparkline>(PointsProperty, StrokeProperty, StrokeThicknessProperty);
+        AffectsRender<Sparkline>(PointsProperty, StrokeProperty, StrokeThicknessProperty, FillProperty);
+    }
+
+    public IBrush? Fill
+    {
+        get => GetValue(FillProperty);
+        set => SetValue(FillProperty, value);
     }
 
     public IReadOnlyList<int>? Points
@@ -77,6 +87,22 @@ public sealed class Sparkline : Control
             double norm = range == 0 ? 0.5 : (points[i] - min) / range;
             double y = pad + height * (1 - norm);
             return new Point(x, y);
+        }
+
+        // Optional filled area under the line, closed down to the baseline.
+        if (Fill is { } fill)
+        {
+            var area = new StreamGeometry();
+            using (StreamGeometryContext ctx = area.Open())
+            {
+                double baseline = bounds.Height - pad;
+                ctx.BeginFigure(new Point(At(0).X, baseline), isFilled: true);
+                for (int i = 0; i < points.Count; i++)
+                    ctx.LineTo(At(i));
+                ctx.LineTo(new Point(At(points.Count - 1).X, baseline));
+                ctx.EndFigure(isClosed: true);
+            }
+            context.DrawGeometry(fill, null, area);
         }
 
         var geometry = new StreamGeometry();

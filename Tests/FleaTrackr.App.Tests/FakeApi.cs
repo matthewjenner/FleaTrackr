@@ -9,6 +9,8 @@ public sealed class FakeApi : ITarkovApi
     private readonly Dictionary<string, Item> _items = new();
     private readonly Dictionary<string, List<Barter>> _barters = new();
     private readonly Dictionary<string, List<Craft>> _crafts = new();
+    private readonly Dictionary<string, List<Barter>> _bartersUsing = new();
+    private readonly Dictionary<string, List<Craft>> _craftsUsing = new();
 
     public int BatchCallCount { get; private set; }
 
@@ -31,6 +33,18 @@ public sealed class FakeApi : ITarkovApi
         return this;
     }
 
+    public FakeApi SetBartersUsing(string id, params Barter[] barters)
+    {
+        _bartersUsing[id] = barters.ToList();
+        return this;
+    }
+
+    public FakeApi SetCraftsUsing(string id, params Craft[] crafts)
+    {
+        _craftsUsing[id] = crafts.ToList();
+        return this;
+    }
+
     public Task<IReadOnlyList<Item>> SearchItemsAsync(string query, GameMode mode, int limit = 20, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<Item>>(_items.Values.Where(i => i.Name.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList());
 
@@ -46,11 +60,12 @@ public sealed class FakeApi : ITarkovApi
     public Task<IReadOnlyList<Item>> GetItemsPageAsync(int limit, int offset, GameMode mode, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<Item>>(_items.Values.Skip(offset).Take(limit).ToList());
 
-    public Task<IReadOnlyList<Barter>> GetBartersForAsync(string id, GameMode mode, CancellationToken ct = default) =>
-        Task.FromResult<IReadOnlyList<Barter>>(_barters.GetValueOrDefault(id) ?? []);
-
-    public Task<IReadOnlyList<Craft>> GetCraftsForAsync(string id, GameMode mode, CancellationToken ct = default) =>
-        Task.FromResult<IReadOnlyList<Craft>>(_crafts.GetValueOrDefault(id) ?? []);
+    public Task<ItemTrades> GetItemTradesAsync(string id, GameMode mode, CancellationToken ct = default) =>
+        Task.FromResult(new ItemTrades(
+            _barters.GetValueOrDefault(id) ?? [],
+            _crafts.GetValueOrDefault(id) ?? [],
+            _bartersUsing.GetValueOrDefault(id) ?? [],
+            _craftsUsing.GetValueOrDefault(id) ?? []));
 
     public Task<IReadOnlyList<HistoricalPricePoint>> GetPriceHistoryAsync(string id, int days, GameMode mode, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<HistoricalPricePoint>>([]);

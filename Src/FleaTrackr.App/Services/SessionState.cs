@@ -25,4 +25,7 @@ public sealed record SessionState
     public string LastSearchQuery { get; init; } = "";
     public string? SelectedItemId { get; init; }
     public string? SelectedWatchlistItemId { get; init; }
+
+    /// <summary>The Flip Finder minimum-profit filter the user last used, or null for the default.</summary>
+    public int? FlipMinProfit { get; init; }
 }

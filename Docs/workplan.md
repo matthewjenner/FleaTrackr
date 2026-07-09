@@ -5,10 +5,15 @@ decisions log. Update it as each phase lands.
 
 ## Current status
 
-- **Phase:** All phases (P0-P6) complete + Tier 1 polish done (net-of-fee profit, Settings tab,
-  flea-level awareness). 56 tests (32 Core, 24 App), all green, 0 warnings.
-- **Version:** `Directory.Build.props` is at 1.0.0 (unreleased). Tier 1 is currently folded into
-  1.0.0; run `Scripts/bump-version.sh Minor` if you want it as a separate 1.1.0 release.
+- **Phase:** All phases (P0-P6) complete + Tier 1 and Tier 2 polish done. 59 tests (32 Core,
+  27 App), all green, 0 warnings. App launches clean.
+- **Tier 1:** net-of-fee profit (`FleaFee`), Settings tab, flea-level awareness.
+- **Tier 2:** richer price chart + 7/30/90-day range; Search/Flip sorting + Flip direction filter;
+  Flip min-profit session restore; barter/craft "used in" + per-input breakdown (one combined
+  `GetItemTradesAsync` query); system-tray + close-to-tray + in-window alert notifications.
+  Boundary: true OS toasts when fully hidden are deferred (need packaged-install context).
+- **Version:** `Directory.Build.props` is at 1.0.0 (unreleased). Tiers 1-2 are folded into 1.0.0;
+  run `Scripts/bump-version.sh Minor` to cut them as a separate release.
 - **Builds/tests:** `dotnet build` and `dotnet test` green, 0 warnings (47 tests: 24 Core, 23 App).
   All four feature tabs wired; app launches clean. Live search/barter/craft/flip all verified
   against the API.

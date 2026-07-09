@@ -62,6 +62,18 @@
                            Text="These feed the profit numbers: locked items are hidden from the Flip Finder, and the fee reduction is applied to estimated net profit on the Flip Finder and Barters and Crafts tabs. The flea fee is an estimate - real fees vary with quantity and hideout bonuses." />
             </StackPanel>
 
+            <!-- Notifications -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Alerts and tray" FontWeight="SemiBold"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                <CheckBox Content="Show a desktop notification when a watchlist alert fires"
+                          IsChecked="{Binding NotifyOnAlerts}"
+                          ToolTip.Tip="A notification pops up in the corner of the window when an alert triggers, and the tray icon's tooltip updates to the latest alert." />
+                <CheckBox Content="Keep running in the system tray when the window is closed"
+                          IsChecked="{Binding CloseToTray}"
+                          ToolTip.Tip="With this on, the X button hides FleaTrackr to the system tray so watchlist alerts keep firing in the background. Right-click the tray icon and choose Quit to fully close. With it off, closing exits the app." />
+            </StackPanel>
+
             <!-- Data -->
             <StackPanel Spacing="8">
                 <TextBlock Text="Data" FontWeight="SemiBold"

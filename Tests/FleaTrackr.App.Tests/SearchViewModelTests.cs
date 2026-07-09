@@ -56,6 +56,27 @@ public class SearchViewModelTests
         vm.IsEmptyResult.Should().BeTrue();
     }
 
+    private static Item ItemWithFlea(string name, int fleaSell) => new()
+    {
+        Id = name, Name = name,
+        SellFor = [new VendorPrice(VendorPrice.FleaMarketVendorName, fleaSell, "RUB", fleaSell)],
+    };
+
+    [Fact]
+    public async Task Results_sort_by_flea_price_high_to_low()
+    {
+        var api = new FakeApi()
+            .SetItem(ItemWithFlea("gpu-a", 50_000))
+            .SetItem(ItemWithFlea("gpu-b", 150_000))
+            .SetItem(ItemWithFlea("gpu-c", 90_000));
+        var vm = new SearchViewModel(api, () => GameMode.Pvp) { Query = "gpu" };
+
+        await vm.SearchAsync(TestContext.Current.CancellationToken);
+        vm.SelectedSort = SearchSortOption.All.First(o => o.Sort == SearchSort.PriceHighToLow);
+
+        vm.Results.Select(r => r.Name).Should().ContainInOrder("gpu-b", "gpu-c", "gpu-a");
+    }
+
     [Fact]
     public async Task Search_sends_the_active_game_mode()
     {

@@ -33,15 +33,21 @@ public sealed partial class BartersCraftsViewModel : ViewModelBase
     }
 
     public ObservableCollection<ItemRowViewModel> Results { get; } = [];
+    /// <summary>Barters that produce the selected item.</summary>
     public ObservableCollection<TradeRowViewModel> Barters { get; } = [];
+    /// <summary>Crafts that produce the selected item.</summary>
     public ObservableCollection<TradeRowViewModel> Crafts { get; } = [];
+    /// <summary>Barters that consume the selected item as an input.</summary>
+    public ObservableCollection<TradeRowViewModel> UsingBarters { get; } = [];
+    /// <summary>Crafts that consume the selected item as an input.</summary>
+    public ObservableCollection<TradeRowViewModel> UsingCrafts { get; } = [];
 
     [ObservableProperty] private string _query = "";
     [ObservableProperty] private ItemRowViewModel? _selectedResult;
     [ObservableProperty] private bool _isBusy;
     [ObservableProperty] private string? _statusMessage;
 
-    /// <summary>True once an item is selected but it has neither barters nor crafts.</summary>
+    /// <summary>True once an item is selected but it has no related trades at all.</summary>
     [ObservableProperty] private bool _noTrades;
 
     /// <summary>True until an item is selected, to show the initial hint.</summary>
@@ -49,6 +55,8 @@ public sealed partial class BartersCraftsViewModel : ViewModelBase
 
     [ObservableProperty] private bool _hasBarters;
     [ObservableProperty] private bool _hasCrafts;
+    [ObservableProperty] private bool _hasUsingBarters;
+    [ObservableProperty] private bool _hasUsingCrafts;
 
     partial void OnQueryChanged(string value) => _ = DebouncedSearchAsync(value);
 
@@ -91,6 +99,8 @@ public sealed partial class BartersCraftsViewModel : ViewModelBase
     {
         Barters.Clear();
         Crafts.Clear();
+        UsingBarters.Clear();
+        UsingCrafts.Clear();
         NoTrades = false;
         HasSelection = row is not null;
         if (row is null) return;
@@ -99,21 +109,19 @@ public sealed partial class BartersCraftsViewModel : ViewModelBase
         StatusMessage = null;
         try
         {
-            GameMode mode = _mode();
-            string id = row.Item.Id;
-
-            IReadOnlyList<Barter> barters = await _api.GetBartersForAsync(id, mode);
-            IReadOnlyList<Craft> crafts = await _api.GetCraftsForAsync(id, mode);
+            ItemTrades trades = await _api.GetItemTradesAsync(row.Item.Id, _mode());
             double feeReduction = _settings().FleaFeeReductionPercent;
 
-            foreach (TradeRowViewModel t in barters.Select(b => TradeRowViewModel.FromBarter(b, feeReduction)).OrderByDescending(t => t.SortKey ?? int.MinValue))
-                Barters.Add(t);
-            foreach (TradeRowViewModel t in crafts.Select(c => TradeRowViewModel.FromCraft(c, feeReduction)).OrderByDescending(t => t.SortKey ?? int.MinValue))
-                Crafts.Add(t);
+            Fill(Barters, trades.BartersFor.Select(b => TradeRowViewModel.FromBarter(b, feeReduction)));
+            Fill(Crafts, trades.CraftsFor.Select(c => TradeRowViewModel.FromCraft(c, feeReduction)));
+            Fill(UsingBarters, trades.BartersUsing.Select(b => TradeRowViewModel.FromBarter(b, feeReduction)));
+            Fill(UsingCrafts, trades.CraftsUsing.Select(c => TradeRowViewModel.FromCraft(c, feeReduction)));
 
             HasBarters = Barters.Count > 0;
             HasCrafts = Crafts.Count > 0;
-            NoTrades = Barters.Count == 0 && Crafts.Count == 0;
+            HasUsingBarters = UsingBarters.Count > 0;
+            HasUsingCrafts = UsingCrafts.Count > 0;
+            NoTrades = !(HasBarters || HasCrafts || HasUsingBarters || HasUsingCrafts);
         }
         catch (Exception ex)
         {
@@ -123,6 +131,13 @@ public sealed partial class BartersCraftsViewModel : ViewModelBase
         {
             IsBusy = false;
         }
+    }
+
+    // Adds trade rows to a collection, best profit first.
+    private static void Fill(ObservableCollection<TradeRowViewModel> target, IEnumerable<TradeRowViewModel> rows)
+    {
+        foreach (TradeRowViewModel t in rows.OrderByDescending(t => t.SortKey ?? int.MinValue))
+            target.Add(t);
     }
 
     private void OnGameModeChanged()

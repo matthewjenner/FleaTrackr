@@ -49,6 +49,8 @@ internal sealed class ItemDto
     [JsonPropertyName("sellFor")] public List<VendorPriceDto>? SellFor { get; set; }
     [JsonPropertyName("bartersFor")] public List<BarterDto>? BartersFor { get; set; }
     [JsonPropertyName("craftsFor")] public List<CraftDto>? CraftsFor { get; set; }
+    [JsonPropertyName("bartersUsing")] public List<BarterDto>? BartersUsing { get; set; }
+    [JsonPropertyName("craftsUsing")] public List<CraftDto>? CraftsUsing { get; set; }
 
     public Item ToModel() => new()
     {

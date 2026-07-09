@@ -33,6 +33,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         FlipFinder = new FlipFinderViewModel(host);
         Settings = new SettingsViewModel(host);
 
+        // Restore then persist the Flip Finder's min-profit filter across restarts.
+        if (host.Session.FlipMinProfit is { } mp) FlipFinder.MinProfit = mp;
+        FlipFinder.PropertyChanged += OnFlipFinderChanged;
+
         // Restore and then persist search state (query + selection) across restarts.
         Search.RestoreSession(host.Session.LastSearchQuery, host.Session.SelectedItemId);
         Search.PropertyChanged += OnSearchChanged;
@@ -92,6 +96,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 _host.UpdateSession(s => s with { SelectedItemId = Search.SelectedResult?.Item.Id });
                 break;
         }
+    }
+
+    private void OnFlipFinderChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(FlipFinderViewModel.MinProfit))
+            _host.UpdateSession(s => s with { FlipMinProfit = FlipFinder.MinProfit });
     }
 
     // ---- PVP / PVE toggle ----

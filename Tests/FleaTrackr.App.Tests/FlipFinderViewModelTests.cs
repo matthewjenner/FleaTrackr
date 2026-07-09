@@ -49,6 +49,27 @@ public class FlipFinderViewModelTests
     }
 
     [Fact]
+    public async Task Direction_filter_narrows_results_without_rescanning()
+    {
+        Item traderToFlea = Flip("t2f", traderBuy: 10_000, fleaSell: 80_000);   // buy trader, sell flea
+        var fleaToTrader = new Item
+        {
+            Id = "f2t", Name = "f2t",
+            BuyFor = [new VendorPrice(VendorPrice.FleaMarketVendorName, 5_000, "RUB", 5_000)],
+            SellFor = [new VendorPrice("Mechanic", 40_000, "RUB", 40_000)],
+        };
+        var api = new FakeApi().SetItem(traderToFlea).SetItem(fleaToTrader);
+        var vm = new FlipFinderViewModel(api, () => GameMode.Pvp, () => new AppSettings { DefaultMinProfit = 1_000 });
+
+        await vm.ScanCommand.ExecuteAsync(null);
+        vm.Results.Should().HaveCount(2);
+
+        vm.SelectedDirection = FlipDirectionOption.All.First(o => o.Filter == FlipDirectionFilter.FleaToTrader);
+
+        vm.Results.Should().ContainSingle().Which.Name.Should().Be("f2t");
+    }
+
+    [Fact]
     public async Task Direction_and_fee_flag_are_set_for_trader_to_flea()
     {
         var api = new FakeApi().SetItem(Flip("gpu", 100_000, 150_000));

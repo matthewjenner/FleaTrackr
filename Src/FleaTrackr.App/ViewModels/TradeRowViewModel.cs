@@ -12,11 +12,12 @@ namespace FleaTrackr.App.ViewModels;
 public sealed class TradeRowViewModel
 {
     private TradeRowViewModel(
-        string source, string requirementsText, string rewardText, TradeCost cost,
+        string source, IReadOnlyList<ItemStack> required, string rewardText, TradeCost cost,
         bool isCraft, TimeSpan? duration)
     {
         Source = source;
-        RequirementsText = requirementsText;
+        RequirementsText = DescribeStacks(required);
+        RequirementsBreakdown = DescribeStacksWithCost(required);
         RewardText = rewardText;
         IsCraft = isCraft;
 
@@ -38,6 +39,9 @@ public sealed class TradeRowViewModel
 
     public string Source { get; }
     public string RequirementsText { get; }
+
+    /// <summary>Requirements with each input's estimated acquisition cost, for the "Give" tooltip.</summary>
+    public string RequirementsBreakdown { get; }
     public string RewardText { get; }
     public string InputCostText { get; }
     public string OutputValueText { get; }
@@ -59,7 +63,7 @@ public sealed class TradeRowViewModel
         TradeCost cost = ProfitCalculator.ForBarter(barter, feeReductionPercent);
         return new TradeRowViewModel(
             $"{barter.TraderName}  (Lvl {barter.TraderLevel})",
-            DescribeStacks(barter.RequiredItems),
+            barter.RequiredItems,
             DescribeStacks(barter.RewardItems),
             cost, isCraft: false, duration: null)
         { SortKey = cost.Profit };
@@ -70,7 +74,7 @@ public sealed class TradeRowViewModel
         TradeCost cost = ProfitCalculator.ForCraft(craft, feeReductionPercent);
         return new TradeRowViewModel(
             $"{craft.StationName}  (Lvl {craft.StationLevel})",
-            DescribeStacks(craft.RequiredItems),
+            craft.RequiredItems,
             DescribeStacks(craft.RewardItems),
             cost, isCraft: true, duration: craft.Duration)
         { SortKey = cost.Profit };
@@ -83,6 +87,19 @@ public sealed class TradeRowViewModel
             string name = string.IsNullOrEmpty(s.Item.ShortName) ? s.Item.Name : s.Item.ShortName;
             return $"{count}x {name}";
         }));
+
+    // One line per input with its estimated acquisition cost, for the "Give" tooltip.
+    private static string DescribeStacksWithCost(IReadOnlyList<ItemStack> stacks)
+    {
+        if (stacks.Count == 0) return "-";
+        return string.Join("\n", stacks.Select(s =>
+        {
+            string count = s.Count.ToString("0.#", CultureInfo.InvariantCulture);
+            int? unit = ProfitCalculator.AcquisitionCost(s.Item);
+            string cost = unit is { } u ? PriceFormat.Rub((int)Math.Round(u * s.Count)) : "?";
+            return $"{count}x {s.Item.Name}  ({cost})";
+        }));
+    }
 
     private static string FormatDuration(TimeSpan d) =>
         d.TotalHours >= 1

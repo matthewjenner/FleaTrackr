@@ -31,6 +31,15 @@ public sealed record AppSettings
     public double FleaFeeReductionPercent { get; init; }
 
     /// <summary>
+    /// When true, closing the window keeps FleaTrackr running in the system tray (so watchlist
+    /// alerts keep firing) instead of exiting. Quit from the tray menu to actually close.
+    /// </summary>
+    public bool CloseToTray { get; init; }
+
+    /// <summary>When true, a watchlist alert shows a desktop notification and updates the tray.</summary>
+    public bool NotifyOnAlerts { get; init; } = true;
+
+    /// <summary>
     /// The semver of a release the user explicitly clicked "skip" on. While that version is the
     /// latest, the update banner stays hidden; a newer release re-arms it.
     /// </summary>

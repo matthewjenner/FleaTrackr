@@ -25,6 +25,8 @@ public sealed partial class SettingsViewModel : ViewModelBase
         _defaultMinProfit = s.DefaultMinProfit;
         _playerFleaLevel = s.PlayerFleaLevel;
         _fleaFeeReductionPercent = s.FleaFeeReductionPercent;
+        _closeToTray = s.CloseToTray;
+        _notifyOnAlerts = s.NotifyOnAlerts;
 
         _loaded = true;
     }
@@ -35,6 +37,8 @@ public sealed partial class SettingsViewModel : ViewModelBase
     [ObservableProperty] private int _defaultMinProfit;
     [ObservableProperty] private int _playerFleaLevel;
     [ObservableProperty] private double _fleaFeeReductionPercent;
+    [ObservableProperty] private bool _closeToTray;
+    [ObservableProperty] private bool _notifyOnAlerts;
 
     /// <summary>Where the app's config/data files live, shown for reference.</summary>
     public string ConfigFolderPath => AppPaths.BaseDirectory;
@@ -43,6 +47,8 @@ public sealed partial class SettingsViewModel : ViewModelBase
     partial void OnDefaultMinProfitChanged(int value) => Save();
     partial void OnPlayerFleaLevelChanged(int value) => Save();
     partial void OnFleaFeeReductionPercentChanged(double value) => Save();
+    partial void OnCloseToTrayChanged(bool value) => Save();
+    partial void OnNotifyOnAlertsChanged(bool value) => Save();
 
     private void Save()
     {
@@ -53,6 +59,8 @@ public sealed partial class SettingsViewModel : ViewModelBase
             DefaultMinProfit = Math.Max(0, DefaultMinProfit),
             PlayerFleaLevel = Math.Clamp(PlayerFleaLevel, 1, 79),
             FleaFeeReductionPercent = Math.Clamp(FleaFeeReductionPercent, 0, 100),
+            CloseToTray = CloseToTray,
+            NotifyOnAlerts = NotifyOnAlerts,
         });
     }
 

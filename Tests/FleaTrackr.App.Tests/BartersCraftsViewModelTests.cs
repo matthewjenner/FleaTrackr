@@ -61,6 +61,27 @@ public class BartersCraftsViewModelTests
     }
 
     [Fact]
+    public async Task Loads_used_in_barters_and_crafts()
+    {
+        Item item = Priced("thing", sell: 10_000);
+        var usingBarter = new Barter
+        {
+            TraderName = "Prapor", TraderLevel = 1,
+            RequiredItems = [new ItemStack(item, 2)],
+            RewardItems = [new ItemStack(Priced("gun", sell: 50_000), 1)],
+        };
+        var api = new FakeApi().SetItem(item).SetBartersUsing("thing", usingBarter);
+        var vm = new BartersCraftsViewModel(api, () => GameMode.Pvp);
+
+        await vm.LoadTradesAsync(new ItemRowViewModel(item));
+
+        vm.HasUsingBarters.Should().BeTrue();
+        vm.UsingBarters.Should().ContainSingle();
+        vm.HasBarters.Should().BeFalse();
+        vm.NoTrades.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task Item_with_no_trades_sets_the_empty_state()
     {
         Item plain = Priced("plain", sell: 1000);

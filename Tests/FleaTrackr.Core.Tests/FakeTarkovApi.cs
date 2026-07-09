@@ -67,16 +67,13 @@ public sealed class FakeTarkovApi : ITarkovApi
         return Task.FromResult(page);
     }
 
-    public Task<IReadOnlyList<Barter>> GetBartersForAsync(string id, GameMode mode, CancellationToken ct = default)
+    public Task<ItemTrades> GetItemTradesAsync(string id, GameMode mode, CancellationToken ct = default)
     {
         LastMode = mode;
-        return Task.FromResult<IReadOnlyList<Barter>>(_barters.GetValueOrDefault(id) ?? []);
-    }
-
-    public Task<IReadOnlyList<Craft>> GetCraftsForAsync(string id, GameMode mode, CancellationToken ct = default)
-    {
-        LastMode = mode;
-        return Task.FromResult<IReadOnlyList<Craft>>(_crafts.GetValueOrDefault(id) ?? []);
+        return Task.FromResult(new ItemTrades(
+            _barters.GetValueOrDefault(id) ?? [],
+            _crafts.GetValueOrDefault(id) ?? [],
+            [], []));
     }
 
     public Task<IReadOnlyList<HistoricalPricePoint>> GetPriceHistoryAsync(

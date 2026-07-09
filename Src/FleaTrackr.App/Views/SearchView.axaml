@@ -18,6 +18,20 @@
                              VerticalAlignment="Center" IsVisible="{Binding IsBusy}" />
             </Grid>
 
+            <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*" Margin="0,0,0,6">
+                <TextBlock Grid.Column="0" Text="Sort" VerticalAlignment="Center" Margin="0,0,8,0"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSort}"
+                          ToolTip.Tip="Reorder the results list. 'Relevance' keeps the API's match order.">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SearchSortOption">
+                            <TextBlock Text="{Binding Label}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </Grid>
+
             <TextBlock DockPanel.Dock="Bottom" Margin="2,6,0,0" TextWrapping="Wrap"
                        Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}"
                        IsVisible="{Binding StatusMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
@@ -79,12 +93,45 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <!-- 7-day flea price history -->
+                        <!-- Flea price history -->
                         <StackPanel Spacing="4"
-                                    ToolTip.Tip="Flea sell price over the last 7 days. The dot marks the most recent point.">
-                            <TextBlock Text="Flea price, last 7 days" FontSize="12"
-                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
-                            <controls:Sparkline Height="64" Points="{Binding SparklinePoints}" />
+                                    ToolTip.Tip="Flea sell price over the selected window. The dot marks the most recent point; High/Low/Last summarise the range.">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="Flea price history" FontSize="12"
+                                           VerticalAlignment="Center"
+                                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                                <ListBox Grid.Column="1" Classes="range"
+                                         ItemsSource="{Binding HistoryRanges}"
+                                         SelectedItem="{Binding SelectedHistoryRange}"
+                                         ToolTip.Tip="Choose how far back to chart: 7, 30, or 90 days.">
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="2" />
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:HistoryRange">
+                                            <TextBlock Text="{Binding Label}" />
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Grid>
+                            <controls:Sparkline Height="72" Points="{Binding SparklinePoints}"
+                                                Stroke="#3B82F6" Fill="#223B82F6" />
+                            <Grid ColumnDefinitions="*,*,*">
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="High" FontSize="10" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                                    <TextBlock Text="{Binding ChartHighText}" FontSize="12" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Low" FontSize="10" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                                    <TextBlock Text="{Binding ChartLowText}" FontSize="12" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Last" FontSize="10" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                                    <TextBlock Text="{Binding ChartLastText}" FontSize="12" FontWeight="SemiBold" />
+                                </StackPanel>
+                            </Grid>
                         </StackPanel>
 
                         <!-- Price breakdown -->
@@ -146,6 +193,18 @@
     <UserControl.Styles>
         <Style Selector="TextBlock.label">
             <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+        </Style>
+        <!-- Compact segmented look for the chart range selector. -->
+        <Style Selector="ListBox.range">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style Selector="ListBox.range ListBoxItem">
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="CornerRadius" Value="4" />
         </Style>
     </UserControl.Styles>
 </UserControl>

@@ -32,11 +32,11 @@ public interface ITarkovApi
     Task<IReadOnlyList<Item>> GetItemsPageAsync(
         int limit, int offset, GameMode mode, CancellationToken ct = default);
 
-    /// <summary>Barter trades that produce the given item (its <c>bartersFor</c>).</summary>
-    Task<IReadOnlyList<Barter>> GetBartersForAsync(string id, GameMode mode, CancellationToken ct = default);
-
-    /// <summary>Hideout crafts that produce the given item (its <c>craftsFor</c>).</summary>
-    Task<IReadOnlyList<Craft>> GetCraftsForAsync(string id, GameMode mode, CancellationToken ct = default);
+    /// <summary>
+    /// The barters and crafts related to the given item, both those that produce it and those that
+    /// consume it, fetched in a single request.
+    /// </summary>
+    Task<ItemTrades> GetItemTradesAsync(string id, GameMode mode, CancellationToken ct = default);
 
     /// <summary>Flea price history for the given item over the last <paramref name="days"/> days.</summary>
     Task<IReadOnlyList<HistoricalPricePoint>> GetPriceHistoryAsync(

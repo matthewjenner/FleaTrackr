@@ -37,39 +37,39 @@ All three Tier 1 items are implemented and tested (`FleaFee` + `FleaFeeTests`, n
 - **Why:** A flip you cannot list yet is not actionable; today the finder can suggest them.
 - **Where:** `FlipFinder`/`FlipFinderViewModel` filter; a badge in Search/Watchlist rows.
 
-## Tier 2 - Meaningful UX improvements
+## Tier 2 - DONE (all five implemented and tested)
 
-### 4. OS toast notifications + minimize-to-tray  (effort: M-L)
-- **What:** Raise a Windows toast when a watchlist alert fires, and allow minimizing to the system
-  tray so alerts keep working while the window is hidden.
-- **Why:** Alerts are only useful if you see them; today they need the app focused. This makes the
-  watchlist genuinely a background monitor - directly in the spirit of the original request.
-- **Where:** `AlertService` (new) subscribing to `WatchlistService.AlertTriggered`; a tray icon in
-  `App`/`MainWindow`. Consider `DesktopNotifications` or Windows `AppNotification` interop.
+### 4. Notifications + close-to-tray  (effort: M-L)  [DONE]
+- **Done:** System tray icon (Open / Quit) shown when "close to tray" is enabled; the X button then
+  hides to tray so watchlist alerts keep firing in the background. Alerts raise an in-window
+  notification (WindowNotificationManager) and update the tray tooltip. Two Settings toggles.
+- **Boundary / still open:** true OS toasts that appear when the window is fully hidden need the
+  packaged-install context (Start Menu shortcut + AppUserModelID) and a WinUI/`AppNotification`
+  dependency - deferred. Today, when hidden to tray the latest alert shows in the tray tooltip;
+  the in-window toast is visible when the window is open.
 
-### 5. Richer price-history chart + range selector  (effort: M)
+### 5. Richer price-history chart + range selector  (effort: M)  [DONE]
 - **What:** Upgrade the sparkline to a small chart with min/max/last labels and a hover tooltip, and
   a 7 / 30 / 90-day selector (the API's `historicalItemPrices` takes `days`).
 - **Why:** More decision-useful than a bare line; the data is already one call away.
 - **Where:** extend `Sparkline` (or a new `PriceChart` control) + `SearchViewModel`.
 
-### 6. Sorting & filtering across tabs  (effort: M)
-- **What:** Sort Search results (price / 48h change / name) and Flip Finder (profit / ROI / direction),
-  plus a direction filter and an optional category scope for the flip scan (scan one category faster).
-- **Why:** Scales the tabs from "a list" to "a tool"; category-scoped scans also cut API load.
-- **Where:** the three list view models; `items(categoryNames:)` for scoped scans in `TarkovApiClient`.
+### 6. Sorting & filtering across tabs  (effort: M)  [DONE]
+- **Done:** Search results sort (relevance / flea price / 48h change / name); Flip Finder sort
+  (profit / ROI) + direction filter, applied to the last scan without re-querying.
+- **Still open:** category-scoped flip scans (`items(categoryNames:)`) to cut API load - not done.
 
-### 7. Finish session restore for selection  (effort: S)
-- **What:** `SessionState.SelectedWatchlistItemId` is persisted but never re-applied; the Flip Finder's
-  scan params are not remembered either. Wire both.
-- **Why:** Completes the "returns exactly where you left off" promise.
-- **Where:** `WatchlistViewModel` / `FlipFinderViewModel` + `MainWindowViewModel` restore path.
+### 7. Finish session restore for selection  (effort: S)  [DONE]
+- **Done:** The Flip Finder min-profit filter is persisted and restored (`SessionState.FlipMinProfit`);
+  the Search query + selection restore was already wired in P3.
+- **Note:** the watchlist uses an `ItemsControl` (no row-selection model), so
+  `SelectedWatchlistItemId` remains unused - left in `SessionState` for a future selectable list.
 
-### 8. Barter/craft depth  (effort: M)
-- **What:** Per-required-item price breakdown (hover/expand), trader-loyalty and quest-unlock gating,
-  and a "used in" view (`bartersUsing`/`craftsUsing`) so you can see where an item is consumed.
-- **Why:** Turns the tab from "can I profit" into "should I hoard this".
-- **Where:** `ITarkovApi` additions + `BartersCraftsViewModel`/`TradeRowViewModel`.
+### 8. Barter/craft depth  (effort: M)  [DONE]
+- **Done:** "Used in" sections (`bartersUsing`/`craftsUsing`) so you can see where an item is
+  consumed, plus a per-input price breakdown in the "Give" tooltip. All four lists come from one
+  combined `GetItemTradesAsync` query.
+- **Still open:** trader-loyalty / quest-unlock gating badges - not done.
 
 ## Tier 3 - Nice to have / ongoing
 

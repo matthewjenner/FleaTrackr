@@ -24,6 +24,7 @@ public sealed partial class FlipFinderViewModel : ViewModelBase
     private readonly ITarkovApi _api;
     private readonly Func<GameMode> _mode;
     private readonly Func<AppSettings> _settings;
+    private List<FlipOpportunity> _allFlips = [];
 
     public FlipFinderViewModel(AppHost host) : this(host.Api, () => host.GameMode, () => host.Settings)
     {
@@ -39,6 +40,15 @@ public sealed partial class FlipFinderViewModel : ViewModelBase
     }
 
     public ObservableCollection<FlipRowViewModel> Results { get; } = [];
+
+    public IReadOnlyList<FlipSortOption> SortOptions => FlipSortOption.All;
+    public IReadOnlyList<FlipDirectionOption> DirectionOptions => FlipDirectionOption.All;
+
+    [ObservableProperty] private FlipSortOption _selectedSort = FlipSortOption.All[0];
+    [ObservableProperty] private FlipDirectionOption _selectedDirection = FlipDirectionOption.All[0];
+
+    partial void OnSelectedSortChanged(FlipSortOption value) => ApplyView();
+    partial void OnSelectedDirectionChanged(FlipDirectionOption value) => ApplyView();
 
     [ObservableProperty] private bool _isScanning;
     [ObservableProperty] private string _statusMessage = "Scan the market to find trader/flea flips.";
@@ -64,12 +74,11 @@ public sealed partial class FlipFinderViewModel : ViewModelBase
             }
 
             AppSettings settings = _settings();
-            IReadOnlyList<FlipOpportunity> flips = FlipFinder.FindAll(
-                items, MinProfit, settings.FleaFeeReductionPercent, settings.PlayerFleaLevel);
-            foreach (FlipOpportunity op in flips.Take(MaxDisplay))
-                Results.Add(new FlipRowViewModel(op));
+            _allFlips = FlipFinder.FindAll(
+                items, MinProfit, settings.FleaFeeReductionPercent, settings.PlayerFleaLevel).ToList();
+            ApplyView();
 
-            StatusMessage = BuildSummary(items.Count, flips.Count);
+            StatusMessage = BuildSummary(items.Count, _allFlips.Count);
         }
         catch (OperationCanceledException)
         {
@@ -85,6 +94,25 @@ public sealed partial class FlipFinderViewModel : ViewModelBase
         }
     }
 
+    /// <summary>Applies the direction filter and sort to the last scan and repopulates the list.</summary>
+    private void ApplyView()
+    {
+        IEnumerable<FlipOpportunity> view = SelectedDirection.Filter switch
+        {
+            FlipDirectionFilter.TraderToFlea => _allFlips.Where(o => o.Direction == FlipDirection.TraderToFlea),
+            FlipDirectionFilter.FleaToTrader => _allFlips.Where(o => o.Direction == FlipDirection.FleaToTrader),
+            _ => _allFlips,
+        };
+
+        view = SelectedSort.Sort == FlipSort.Roi
+            ? view.OrderByDescending(o => o.RoiPercent)
+            : view.OrderByDescending(o => o.Profit);
+
+        Results.Clear();
+        foreach (FlipOpportunity op in view.Take(MaxDisplay))
+            Results.Add(new FlipRowViewModel(op));
+    }
+
     private string BuildSummary(int scanned, int found)
     {
         string capped = scanned >= MaxItems ? $" (scan capped at {MaxItems})" : "";
@@ -94,6 +122,7 @@ public sealed partial class FlipFinderViewModel : ViewModelBase
 
     private void OnGameModeChanged()
     {
+        _allFlips.Clear();
         Results.Clear();
         StatusMessage = "Economy changed - scan again to refresh flips for the new prices.";
     }

@@ -22,7 +22,7 @@
 
                     <StackPanel Spacing="1">
                         <TextBlock FontSize="12"
-                                   ToolTip.Tip="What you hand over for this trade, valued at the cheapest way to acquire each item (flea or trader).">
+                                   ToolTip.Tip="{Binding RequirementsBreakdown}">
                             <Run Text="Give: " Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" /><Run Text="{Binding RequirementsText}" />
                         </TextBlock>
                         <TextBlock FontSize="12"
@@ -96,15 +96,27 @@
                 <StackPanel Spacing="8">
                     <TextBlock IsVisible="{Binding NoTrades}"
                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                               Text="This item has no barters or crafts." />
+                               Text="This item has no related barters or crafts." />
 
-                    <TextBlock Text="Barters" FontSize="15" FontWeight="SemiBold"
-                               IsVisible="{Binding HasBarters}" />
+                    <TextBlock Text="Produced by - barters" FontSize="15" FontWeight="SemiBold"
+                               IsVisible="{Binding HasBarters}"
+                               ToolTip.Tip="Barter trades that produce this item. Profit is what you gain running the trade." />
                     <ItemsControl ItemsSource="{Binding Barters}" ItemTemplate="{StaticResource TradeTemplate}" />
 
-                    <TextBlock Text="Crafts" FontSize="15" FontWeight="SemiBold" Margin="0,4,0,0"
-                               IsVisible="{Binding HasCrafts}" />
+                    <TextBlock Text="Produced by - crafts" FontSize="15" FontWeight="SemiBold" Margin="0,4,0,0"
+                               IsVisible="{Binding HasCrafts}"
+                               ToolTip.Tip="Hideout crafts that produce this item." />
                     <ItemsControl ItemsSource="{Binding Crafts}" ItemTemplate="{StaticResource TradeTemplate}" />
+
+                    <TextBlock Text="Used in - barters" FontSize="15" FontWeight="SemiBold" Margin="0,10,0,0"
+                               IsVisible="{Binding HasUsingBarters}"
+                               ToolTip.Tip="Barters that consume this item as an input - useful for deciding whether to keep it." />
+                    <ItemsControl ItemsSource="{Binding UsingBarters}" ItemTemplate="{StaticResource TradeTemplate}" />
+
+                    <TextBlock Text="Used in - crafts" FontSize="15" FontWeight="SemiBold" Margin="0,4,0,0"
+                               IsVisible="{Binding HasUsingCrafts}"
+                               ToolTip.Tip="Hideout crafts that consume this item as an input." />
+                    <ItemsControl ItemsSource="{Binding UsingCrafts}" ItemTemplate="{StaticResource TradeTemplate}" />
                 </StackPanel>
             </ScrollViewer>
         </Panel>

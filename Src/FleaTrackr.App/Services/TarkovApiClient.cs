@@ -119,18 +119,23 @@ public sealed class TarkovApiClient : ITarkovApi, IDisposable
         return MapAndCache(data.Items, mode);
     }
 
-    public async Task<IReadOnlyList<Barter>> GetBartersForAsync(
+    public async Task<ItemTrades> GetItemTradesAsync(
         string id, GameMode mode, CancellationToken ct = default)
     {
+        // barterFields/craftFields are reused across the four "for"/"using" lists.
         const string gql = ItemFields + """
 
-            query Barters($ids: [ID]!, $mode: GameMode!) {
+            fragment B on Barter { trader { name } level
+              requiredItems { count item { ...F } } rewardItems { count item { ...F } } }
+            fragment C on Craft { station { name } level duration
+              requiredItems { count item { ...F } } rewardItems { count item { ...F } } }
+
+            query Trades($ids: [ID]!, $mode: GameMode!) {
               items(ids: $ids, gameMode: $mode) {
-                bartersFor {
-                  trader { name } level
-                  requiredItems { count item { ...F } }
-                  rewardItems { count item { ...F } }
-                }
+                bartersFor { ...B }
+                craftsFor { ...C }
+                bartersUsing { ...B }
+                craftsUsing { ...C }
               }
             }
             """;
@@ -141,34 +146,14 @@ public sealed class TarkovApiClient : ITarkovApi, IDisposable
             ["mode"] = mode.ToApiValue(),
         }, ct);
 
-        return (data.Items?.FirstOrDefault()?.BartersFor ?? [])
-            .Select(b => b.ToModel()).ToList();
-    }
+        ItemDto? item = data.Items?.FirstOrDefault();
+        if (item is null) return ItemTrades.Empty;
 
-    public async Task<IReadOnlyList<Craft>> GetCraftsForAsync(
-        string id, GameMode mode, CancellationToken ct = default)
-    {
-        const string gql = ItemFields + """
-
-            query Crafts($ids: [ID]!, $mode: GameMode!) {
-              items(ids: $ids, gameMode: $mode) {
-                craftsFor {
-                  station { name } level duration
-                  requiredItems { count item { ...F } }
-                  rewardItems { count item { ...F } }
-                }
-              }
-            }
-            """;
-
-        ItemsData data = await PostAsync<ItemsData>(gql, new()
-        {
-            ["ids"] = new[] { id },
-            ["mode"] = mode.ToApiValue(),
-        }, ct);
-
-        return (data.Items?.FirstOrDefault()?.CraftsFor ?? [])
-            .Select(c => c.ToModel()).ToList();
+        return new ItemTrades(
+            (item.BartersFor ?? []).Select(b => b.ToModel()).ToList(),
+            (item.CraftsFor ?? []).Select(c => c.ToModel()).ToList(),
+            (item.BartersUsing ?? []).Select(b => b.ToModel()).ToList(),
+            (item.CraftsUsing ?? []).Select(c => c.ToModel()).ToList());
     }
 
     public async Task<IReadOnlyList<HistoricalPricePoint>> GetPriceHistoryAsync(

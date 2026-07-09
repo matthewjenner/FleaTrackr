@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using FleaTrackr.App.Services;
 using FleaTrackr.Core;
 using FleaTrackr.Core.Models;
+using FleaTrackr.Core.Pricing;
 
 namespace FleaTrackr.App.ViewModels;
 
@@ -16,14 +17,16 @@ namespace FleaTrackr.App.ViewModels;
 /// </summary>
 public sealed partial class SearchViewModel : ViewModelBase
 {
-    private const int HistoryDays = 7;
     private static readonly TimeSpan DebounceDelay = TimeSpan.FromMilliseconds(300);
+
+    private const string PriceFormatDash = "-";
 
     private readonly ITarkovApi _api;
     private readonly Func<GameMode> _mode;
     private readonly WatchlistService? _watchlist;
     private readonly Func<AppSettings> _settings;
     private CancellationTokenSource? _searchCts;
+    private List<string> _apiOrder = [];
 
     /// <summary>Production constructor: wires to the app's API, PVP/PVE toggle, and watchlist.</summary>
     public SearchViewModel(AppHost host)
@@ -49,6 +52,13 @@ public sealed partial class SearchViewModel : ViewModelBase
 
     public ObservableCollection<ItemRowViewModel> Results { get; } = [];
 
+    public IReadOnlyList<SearchSortOption> SortOptions => SearchSortOption.All;
+
+    [ObservableProperty]
+    private SearchSortOption _selectedSort = SearchSortOption.All[0];
+
+    partial void OnSelectedSortChanged(SearchSortOption value) => ApplySort();
+
     [ObservableProperty]
     private string _query = "";
 
@@ -63,6 +73,21 @@ public sealed partial class SearchViewModel : ViewModelBase
 
     [ObservableProperty]
     private IReadOnlyList<int>? _sparklinePoints;
+
+    /// <summary>Chart summary labels for the selected range (high, low, and latest price).</summary>
+    [ObservableProperty] private string _chartHighText = PriceFormatDash;
+    [ObservableProperty] private string _chartLowText = PriceFormatDash;
+    [ObservableProperty] private string _chartLastText = PriceFormatDash;
+
+    public IReadOnlyList<HistoryRange> HistoryRanges => HistoryRange.All;
+
+    [ObservableProperty]
+    private HistoryRange _selectedHistoryRange = HistoryRange.All[0];
+
+    partial void OnSelectedHistoryRangeChanged(HistoryRange value)
+    {
+        if (SelectedResult is { } row) _ = LoadHistoryAsync(row);
+    }
 
     [ObservableProperty]
     private Bitmap? _selectedIcon;
@@ -166,9 +191,11 @@ public sealed partial class SearchViewModel : ViewModelBase
             ct.ThrowIfCancellationRequested();
 
             Results.Clear();
+            _apiOrder = items.Select(i => i.Id).ToList();
             foreach (Item item in items)
                 Results.Add(new ItemRowViewModel(item));
 
+            ApplySort();
             IsEmptyResult = Results.Count == 0;
 
             // Reapply a restored selection once its row exists.
@@ -195,23 +222,71 @@ public sealed partial class SearchViewModel : ViewModelBase
 
     private async Task LoadDetailAsync(ItemRowViewModel? row)
     {
-        SparklinePoints = null;
         SelectedIcon = null;
-        if (row is null) return;
+        if (row is null)
+        {
+            ClearChart();
+            return;
+        }
 
         // Icon and history are independent; load both, tolerating failure of either.
         SelectedIcon = await ImageLoader.LoadAsync(row.IconLink);
+        await LoadHistoryAsync(row);
+    }
 
+    private async Task LoadHistoryAsync(ItemRowViewModel row)
+    {
         try
         {
             IReadOnlyList<HistoricalPricePoint> history =
-                await _api.GetPriceHistoryAsync(row.Item.Id, HistoryDays, _mode());
-            SparklinePoints = history.Count > 0 ? history.Select(p => p.Price).ToList() : null;
+                await _api.GetPriceHistoryAsync(row.Item.Id, SelectedHistoryRange.Days, _mode());
+
+            if (history.Count == 0)
+            {
+                ClearChart();
+                return;
+            }
+
+            List<int> prices = history.Select(p => p.Price).ToList();
+            SparklinePoints = prices;
+            ChartHighText = PriceFormat.Rub(prices.Max());
+            ChartLowText = PriceFormat.Rub(prices.Min());
+            ChartLastText = PriceFormat.Rub(prices[^1]);
         }
         catch
         {
-            // A missing history just means no sparkline - not an error worth surfacing.
-            SparklinePoints = null;
+            // A missing history just means no chart - not an error worth surfacing.
+            ClearChart();
+        }
+    }
+
+    private void ClearChart()
+    {
+        SparklinePoints = null;
+        ChartHighText = ChartLowText = ChartLastText = PriceFormatDash;
+    }
+
+    /// <summary>Reorders <see cref="Results"/> in place per the selected sort, preserving selection.</summary>
+    private void ApplySort()
+    {
+        if (Results.Count < 2) return;
+
+        static int FleaValue(ItemRowViewModel r) => r.Item.FleaSell?.PriceRub ?? r.Item.LastLowPrice ?? 0;
+
+        List<ItemRowViewModel> ordered = SelectedSort.Sort switch
+        {
+            SearchSort.PriceHighToLow => Results.OrderByDescending(FleaValue).ToList(),
+            SearchSort.ChangeHighToLow => Results.OrderByDescending(r => r.ChangeValue).ToList(),
+            SearchSort.NameAToZ => Results.OrderBy(r => r.Name, StringComparer.OrdinalIgnoreCase).ToList(),
+            // Relevance: restore the order the API returned.
+            _ => Results.OrderBy(r => _apiOrder.IndexOf(r.Item.Id)).ToList(),
+        };
+
+        // Move rows into their new positions (Move keeps the selected item selected).
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            int current = Results.IndexOf(ordered[i]);
+            if (current != i) Results.Move(current, i);
         }
     }
 
