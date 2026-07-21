@@ -14,15 +14,12 @@ decisions log. Update it as each phase lands.
   Boundary: true OS toasts when fully hidden are deferred (need packaged-install context).
 - **Version:** `Directory.Build.props` is at 1.0.0 (unreleased). Tiers 1-2 are folded into 1.0.0;
   run `Scripts/bump-version.sh Minor` to cut them as a separate release.
-- **Builds/tests:** `dotnet build` and `dotnet test` green, 0 warnings (47 tests: 24 Core, 23 App).
-  All four feature tabs wired; app launches clean. Live search/barter/craft/flip all verified
-  against the API.
-- **Avalonia 12 API notes learned:** `TextBox.Watermark` is obsolete -> use `PlaceholderText`;
-  `IsVisible` does not auto-coerce an int Count to bool (use an explicit bool property).
-- **Build gotcha:** kill any stray `FleaTrackr.App.exe` before rebuilding (it locks the output DLL).
 - **Remaining before first release:** the GitHub repo must be **public** and have at least one
   release for the in-app updater to work; push to `main` triggers `release.yml` (after a version
-  bump). Optional future polish: OS toast notifications, flea-fee-net flip profit, richer charts.
+  bump). Remaining polish is tracked in `polish-backlog.md` (Tier 3).
+
+> Durable conventions and gotchas (Avalonia 12 API differences, the build file-lock, window-geometry
+> handling, CI action pinning) live in `CLAUDE.md`, not here - this file is a phase tracker.
 
 ## Phases
 

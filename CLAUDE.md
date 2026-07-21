@@ -119,6 +119,12 @@ mid-write never corrupts a file:
 - **Tooltips/hints**: give every input, meaningful label, column header, and action button a
   `ToolTip.Tip` explaining what it is and does, in plain language (assume no Tarkov jargon - e.g.
   "character (PMC) level", not "flea level"). New UI should follow suit.
+- **Tests**: put decision logic in Core and unit-test it there (pure, no network); test App-side
+  behaviour against the in-memory `ITarkovApi` fake or a stub `HttpMessageHandler`, never the live
+  API. View models take injectable seams (`ITarkovApi`, `Func<GameMode>`, `Func<AppSettings>`,
+  `TimeProvider`) so tests need no `AppHost`. In App tests (xunit v3) pass
+  `TestContext.Current.CancellationToken` to async calls to satisfy the xUnit1051 analyzer.
+- **Keep the build at 0 warnings.** Warnings are treated as breakage, not noise.
 
 ## Releasing / versioning (identical to PlexTool)
 
@@ -130,6 +136,11 @@ mid-write never corrupts a file:
   release already exists, else tests + publishes win-x64 self-contained + `vpk pack --packId
   FleaTrackr --mainExe FleaTrackr.App.exe` + creates the GitHub release. CI never commits.
 - The repo MUST be public for the in-app update check (unauthenticated `GithubSource`) to work.
+- **Workflow action pins must stay on a supported Node runtime.** Before adding or bumping any
+  `uses:` in `.github/workflows/`, verify the current stable major rather than trusting memory -
+  check the tag's `action.yml` (`runs.using`) or `gh api repos/<owner>/<repo>/releases/latest`.
+  Majors pinned to Node 20 are deprecated and warn in CI. Current pins: `actions/checkout@v5` and
+  `actions/setup-dotnet@v5` (both Node 24).
 - The user handles all git adds/commits. `origin` is
   `https://github.com/matthewjenner/FleaTrackr.git`.
 
@@ -142,3 +153,12 @@ mid-write never corrupts a file:
 - **Flea price is not a top-level field**: `avg24hPrice`/`lastLowPrice` exist, but the actual
   flea buy/sell lives in `buyFor`/`sellFor` under the "Flea Market" vendor. Read both.
 - **Prices can be null** (item not currently on flea, or fresh wipe) - handle nulls in the UI.
+- **Avalonia 12 API differences** (bite when following older samples): `TextBox.Watermark` is
+  obsolete - use `PlaceholderText`; `IsVisible` does NOT coerce an int (e.g. a collection `Count`)
+  to bool - expose an explicit bool property instead.
+- **Kill any stray `FleaTrackr.App.exe` before rebuilding.** A still-running instance locks the
+  output DLL and the build fails with MSB3021/MSB3027.
+- **Window geometry is never persisted while minimized.** Windows reports a minimized window's
+  position as (-32000,-32000); saving that restores the window off-screen. `MainWindow` skips
+  persisting in the minimized state and ignores a restored position that is not on any connected
+  screen (also covers a disconnected monitor).
